@@ -1,0 +1,7 @@
+[unstable]
+build-std = ["core", "compiler_builtins", "alloc"]
+build-std-features = ["compiler-builtins-mem"]
+
+[build]
+target = "./.cargo/x86_64-barebones.json"
+rustflags = ["-Cforce-frame-pointers=yes"]

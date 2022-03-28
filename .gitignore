@@ -1,1 +1,8 @@
 /target
+
+barebones/limine
+barebones/iso_root
+barebones/barebones.iso
+barebones/target
+
+*.log

@@ -7,8 +7,18 @@ pub struct LiminePtr<T>(*const T);
 impl<T> LiminePtr<T> {
     const DEFAULT: LiminePtr<T> = Self(core::ptr::null_mut() as *const T);
 
-    fn get(&self) -> *const T {
+    fn raw_get(&self) -> *const T {
         self.0
+    }
+
+    pub fn get(&self) -> Option<&'static T> {
+        let raw_ptr = self.raw_get();
+
+        if raw_ptr.is_null() {
+            None
+        } else {
+            unsafe { Some(&*raw_ptr) }
+        }
     }
 }
 
@@ -16,6 +26,9 @@ impl LiminePtr<char> {
     // todo: create a to_string() helper function to convert the null terminated
     // string to a rust string.
 }
+
+// maker trait implementations for limine ptr
+unsafe impl<T> Sync for LiminePtr<T> {}
 
 /// Used to create the limine request struct.
 macro_rules! make_struct {
@@ -26,12 +39,12 @@ macro_rules! make_struct {
         };
     ) => {
         $(#[$meta])*
-        #[repr(C, packed)]
+        #[repr(C)]
         pub struct $name {
             id: [u64; 4],
             revision: u64,
 
-            $($field_name: $field_ty),*
+            pub $($field_name: $field_ty),*
         }
 
         impl $name {
@@ -69,6 +82,7 @@ make_struct!(
 );
 
 // terminal request tag:
+#[repr(C)]
 pub struct LimineTerminalResponse {
     pub revision: u64,
 
@@ -80,7 +94,7 @@ pub struct LimineTerminalResponse {
 
 impl LimineTerminalResponse {
     pub fn write(&self) -> impl Fn(&str) {
-        let __fn_ptr = self.write.get();
+        let __fn_ptr = self.write.raw_get();
         let __term_func =
             unsafe { core::mem::transmute::<*const (), extern "C" fn(*const i8, u64)>(__fn_ptr) };
 
