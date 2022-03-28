@@ -81,6 +81,66 @@ make_struct!(
     };
 );
 
+// stack size request tag:
+#[repr(C)]
+pub struct LimineStackSizeResponse {
+    pub revision: u64,
+}
+
+make_struct!(
+    struct LimineStackSizeRequest: [0x224ef0460a8e8926, 0xe1cb0fc25f46ea3d] => {
+        response: LiminePtr<LimineStackSizeResponse> = LiminePtr::DEFAULT,
+        stack_size: u64 = 0
+    };
+);
+
+// HHDM request tag:
+#[repr(C)]
+pub struct LimineHhdmResponse {
+    pub revision: u64,
+    pub offset: u64,
+}
+
+make_struct!(
+    struct LimineHhdmRequest: [0x48dcf1cb8ad2b852, 0x63984e959a98244b] => {
+        response: LiminePtr<LimineHhdmResponse> = LiminePtr::DEFAULT
+    };
+);
+
+// framebuffer request tag:
+#[repr(C)]
+pub struct LimineFramebuffer {
+    pub address: LiminePtr<u8>,
+    pub width: u16,
+    pub height: u16,
+    pub pitch: u16,
+    pub bpp: u16,
+    pub memory_model: u8,
+    pub red_mask_size: u8,
+    pub red_mask_shift: u8,
+    pub green_mask_size: u8,
+    pub green_mask_shift: u8,
+    pub blue_mask_size: u8,
+    pub blue_mask_shift: u8,
+    pub unused: u8,
+    pub edid_size: u64,
+    pub edid: LiminePtr<u8>,
+}
+
+#[repr(C)]
+pub struct LimineFramebufferResponse {
+    pub revision: u64,
+    pub framebuffer_count: u64,
+    // todo: add a helper function to convert the limine framebuffer array to a rust array.
+    pub framebuffers: LiminePtr<LimineFramebuffer>,
+}
+
+make_struct!(
+    struct LimineFramebufferRequest: [0xcbfe81d7dd2d1977, 0x063150319ebc9b71] => {
+        response: LiminePtr<LimineFramebufferResponse> = LiminePtr::DEFAULT
+    };
+);
+
 // terminal request tag:
 #[repr(C)]
 pub struct LimineTerminalResponse {
