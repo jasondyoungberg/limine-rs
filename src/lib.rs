@@ -237,3 +237,85 @@ make_struct!(
         response: LiminePtr<LimineEntryPointResponse> = LiminePtr::DEFAULT
     };
 );
+
+// module request tag:
+#[repr(C)]
+pub struct LimineModuleResponse {
+    pub revision: u64,
+    pub module_count: u64,
+    // todo: add a helper function to convert the limine modules array to a rust array.
+    pub modules: LiminePtr<LimineFile>,
+}
+
+make_struct!(
+    struct LimineModuleRequest: [0x3e7e279702be32af, 0xca1c4f3bd1280cee] => {
+        response: LiminePtr<LimineModuleResponse> = LiminePtr::DEFAULT
+    };
+);
+
+// RSDP request tag:
+#[repr(C)]
+pub struct LimineRsdpResponse {
+    pub revision: u64,
+    pub address: LiminePtr<u8>,
+}
+
+make_struct!(
+    struct LimineRsdpRequest: [0xc5e77b6b397e7b43, 0x27637845accdcf3c] => {
+        response: LiminePtr<LimineRsdpResponse> = LiminePtr::DEFAULT
+    };
+);
+
+// SMBIOS request tag:
+#[repr(C)]
+pub struct LimineSmbiosResponse {
+    pub revision: u64,
+    pub entry_32: LiminePtr<u8>,
+    pub entry_64: LiminePtr<u8>,
+}
+
+make_struct!(
+    struct LimineSmbiosRequest: [0x9e9046f11e095391, 0xaa4a520fefbde5ee] => {
+        response: LiminePtr<LimineSmbiosResponse> = LiminePtr::DEFAULT
+    };
+);
+
+// EFI system table request tag:
+#[repr(C)]
+pub struct LimineEfiSystemTableResponse {
+    pub revision: u64,
+    pub address: LiminePtr<u8>,
+}
+
+make_struct!(
+    struct LimineEfiSystemTableRequest: [0x5ceba5163eaaf6d6, 0x0a6981610cf65fcc] => {
+        response: LiminePtr<LimineEfiSystemTableResponse> = LiminePtr::DEFAULT
+    };
+);
+
+// boot time request tag:
+#[repr(C)]
+pub struct LimineBootTimeResponse {
+    pub revision: u64,
+    pub boot_time: i64,
+}
+
+make_struct!(
+    struct LimineBootTimeRequest: [0x502746e184c088aa, 0xfbc5ec83e6327893] => {
+        response: LiminePtr<LimineBootTimeResponse> = LiminePtr::DEFAULT
+    };
+);
+
+// kernel address request tag:
+#[repr(C)]
+pub struct LimineKernelAddressResponse {
+    pub revision: u64,
+    pub physical_base: u64,
+    pub virtual_base: u64,
+}
+
+make_struct!(
+    struct LimineKernelAddressRequest: [0x71ba76863cc55f63, 0xb2644a48c516a487] => {
+        response: LiminePtr<LimineKernelAddressResponse> = LiminePtr::DEFAULT
+    };
+);
