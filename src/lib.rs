@@ -67,6 +67,31 @@ macro_rules! make_struct {
     };
 }
 
+// misc structures:
+
+pub struct LimineUuid {
+    pub a: u32,
+    pub b: u16,
+    pub c: u16,
+    pub d: [u8; 8],
+}
+
+pub struct LimineFile {
+    pub revision: u64,
+    pub base: LiminePtr<u8>,
+    pub length: u64,
+    pub path: LiminePtr<char>,
+    pub cmdline: LiminePtr<char>,
+    pub partition_index: u64,
+    pub unused: u32,
+    pub tftp_ip: u32,
+    pub tftp_port: u32,
+    pub mbr_disk_id: u32,
+    pub gpt_disk_uuid: LimineUuid,
+    pub gpt_part_uuid: LimineUuid,
+    pub part_uuid: LimineUuid,
+}
+
 // boot info request tag:
 pub struct LimineBootInfoResponse {
     pub revision: u64,
@@ -168,5 +193,47 @@ make_struct!(
     struct LimineTerminalRequest: [0x0785a0aea5d0750f, 0x1c1936fee0d6cf6e] => {
         response: LiminePtr<LimineTerminalResponse> = LiminePtr::DEFAULT,
         callback: LiminePtr<()> = LiminePtr::DEFAULT
+    };
+);
+
+// 5-level paging request tag:
+#[repr(C)]
+pub struct Limine5LevelPagingResponse {
+    pub revision: u64,
+}
+
+make_struct!(
+    struct Limine5LevelPagingRequest: [0x94469551da9b3192, 0xebe5e86db7382888] => {
+        response: LiminePtr<Limine5LevelPagingResponse> = LiminePtr::DEFAULT
+    };
+);
+
+// todo: smp request tag:
+// todo: smp memory map tag:
+
+// entry point request tag:
+#[repr(C)]
+pub struct LimineEntryPointResponse {
+    pub revision: u64,
+}
+
+// todo: add helper function to get a rusty function pointer to the entry point.
+make_struct!(
+    struct LimineEntryPointRequest: [0x13d86c035a1cd3e1, 0x2b0caa89d8f3026a] => {
+        response: LiminePtr<LimineEntryPointResponse> = LiminePtr::DEFAULT,
+        entry: LiminePtr<()> = LiminePtr::DEFAULT
+    };
+);
+
+// kernel file request tag:
+#[repr(C)]
+pub struct LimineKernelFileResponse {
+    pub revision: u64,
+    pub kernel_file: LiminePtr<LimineFile>,
+}
+
+make_struct!(
+    struct LimineKernelFileRequest: [0xad97e90e83f1ed67, 0x31eb5d1c5ff23b69] => {
+        response: LiminePtr<LimineEntryPointResponse> = LiminePtr::DEFAULT
     };
 );
