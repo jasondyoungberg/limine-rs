@@ -222,20 +222,13 @@ pub struct LimineFramebuffer {
 pub struct LimineFramebufferResponse {
     pub revision: u64,
     pub framebuffer_count: u64,
-    pub framebuffers: LiminePtr<LimineFramebuffer>,
+    pub framebuffers: LiminePtr<*const LimineFramebuffer>,
 }
 
 impl LimineFramebufferResponse {
     pub fn framebuffers(&self) -> Option<&'static [LimineFramebuffer]> {
-        self.framebuffers.get().map(|_| unsafe {
-            // SAFETY:
-            //
-            // - The pointer is non-null
-            // - The bootloader is expected to provide a valid pointer and valid length.
-            core::slice::from_raw_parts(
-                self.framebuffers.raw_get(),
-                self.framebuffer_count as usize,
-            )
+        self.framebuffers.get().map(|entry| unsafe {
+            core::slice::from_raw_parts(*entry, self.framebuffer_count as usize)
         })
     }
 }
@@ -291,7 +284,50 @@ make_struct!(
 );
 
 // todo: smp request tag:
-// todo: memory map request tag:
+
+// memory map request tag:
+#[repr(u32)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum LimineMemoryMapEntryType {
+    Usable = 0,
+    Reserved = 1,
+    AcpiReclaimable = 2,
+    AcpiNvs = 3,
+    BadMemory = 4,
+    BootloaderReclaimable = 5,
+    Kernel = 6, // kernel and modules
+    Framebuffer = 7,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct LimineMmapEntry {
+    pub base: u64,
+    pub len: u64,
+    pub typ: LimineMemoryMapEntryType,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct LimineMmapResponse {
+    pub revision: u64,
+    pub entry_count: u64,
+    pub entries: LiminePtr<*const LimineMmapEntry>,
+}
+
+impl LimineMmapResponse {
+    pub fn mmap(&self) -> Option<&'static [LimineMmapEntry]> {
+        self.entries
+            .get()
+            .map(|entry| unsafe { core::slice::from_raw_parts(*entry, self.entry_count as usize) })
+    }
+}
+
+make_struct!(
+    struct LimineMmapRequest: [0x67cf3d9d378a806f, 0xe304acdfc50c3c62] => {
+        response: LiminePtr<LimineMmapResponse> = LiminePtr::DEFAULT
+    };
+);
 
 // entry point request tag:
 #[repr(C)]
@@ -327,18 +363,14 @@ make_struct!(
 pub struct LimineModuleResponse {
     pub revision: u64,
     pub module_count: u64,
-    pub modules: LiminePtr<LimineFile>,
+    pub modules: LiminePtr<*const LimineFile>,
 }
 
 impl LimineModuleResponse {
     pub fn modules(&self) -> Option<&'static [LimineFile]> {
-        self.modules.get().map(|_| unsafe {
-            // SAFETY:
-            //
-            // - The pointer is non-null
-            // - The bootloader is expected to provide a valid pointer and valid length.
-            core::slice::from_raw_parts(self.modules.raw_get(), self.module_count as usize)
-        })
+        self.modules
+            .get()
+            .map(|entry| unsafe { core::slice::from_raw_parts(*entry, self.module_count as usize) })
     }
 }
 
