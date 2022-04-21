@@ -1,6 +1,8 @@
 use core::fmt;
 use core::fmt::Write;
 
+use limine_rs::LimineTerminalResponse;
+
 // Used to write to the screen.
 use crate::TERMINAL_REQUEST;
 
@@ -8,10 +10,21 @@ struct Writer;
 
 impl core::fmt::Write for Writer {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        // NOTE: if using this writer as a template for your own, you might want to cache
-        // the result of the response by wrapping this statement in a once cell for performence.
-        let writer = TERMINAL_REQUEST.response.get().unwrap().write();
-        writer(s);
+        static mut CACHED: Option<&'static LimineTerminalResponse> = None;
+
+        unsafe {
+            if let Some(writer) = CACHED {
+                writer.write()(s);
+            } else {
+                let response = TERMINAL_REQUEST.response.get().unwrap();
+                let writer = response.write();
+
+                writer(s);
+
+                // initialize the cached response
+                CACHED = Some(response);
+            }
+        }
 
         Ok(())
     }
