@@ -1,4 +1,7 @@
 //! Rust crate for parsing the limine boot protocol structures.
+//!
+//! ## Resources
+//! * [Limine Boot Protocol Specification](https://github.com/limine-bootloader/limine/blob/trunk/PROTOCOL.md)
 
 #![no_std]
 
@@ -137,18 +140,33 @@ pub struct LimineUuid {
 
 #[derive(Debug)]
 pub struct LimineFile {
+    /// Revision of this structure.
     pub revision: u64,
+    /// The address of the file.
     pub base: LiminePtr<u8>,
+    /// The size of the file.
     pub length: u64,
+    /// The path of the file within the volume, with a leading slash.
     pub path: LiminePtr<char>,
+    /// A command line associated with the file.
     pub cmdline: LiminePtr<char>,
-    pub partition_index: u64,
+    /// Type of media file resides on.
+    pub media_type: u64,
     pub unused: u32,
+    /// If non-0, this is the IP of the TFTP server the file was loaded from.
     pub tftp_ip: u32,
+    /// Likewise, but port.
     pub tftp_port: u32,
+    /// 1-based partition index of the volume from which the file was loaded. If 0, it
+    /// means invalid or unpartitioned.
+    pub partition_index: u32,
+    /// If non-0, this is the ID of the disk the file was loaded from as reported in its MBR.
     pub mbr_disk_id: u32,
+    /// If non-0, this is the UUID of the disk the file was loaded from as reported in its GPT.
     pub gpt_disk_uuid: LimineUuid,
+    /// If non-0, this is the UUID of the partition the file was loaded from as reported in the GPT.
     pub gpt_part_uuid: LimineUuid,
+    /// If non-0, this is the UUID of the filesystem of the partition the file was loaded from.
     pub part_uuid: LimineUuid,
 }
 
@@ -157,8 +175,9 @@ pub struct LimineFile {
 #[derive(Debug)]
 pub struct LimineBootInfoResponse {
     pub revision: u64,
-
+    /// Null-terminated string containing the name of the bootloader.
     pub name: LiminePtr<char>,
+    /// Null-terminated string containg the version of the bootloader.
     pub version: LiminePtr<char>,
 }
 
@@ -178,6 +197,7 @@ pub struct LimineStackSizeResponse {
 make_struct!(
     struct LimineStackSizeRequest: [0x224ef0460a8e8926, 0xe1cb0fc25f46ea3d] => {
         response: LiminePtr<LimineStackSizeResponse> = LiminePtr::DEFAULT,
+        /// The requested stack size (also used for SMP processors).
         stack_size: u64 = 0
     };
 );
@@ -187,6 +207,7 @@ make_struct!(
 #[derive(Debug)]
 pub struct LimineHhdmResponse {
     pub revision: u64,
+    /// The virtual address offset of the beginning of the higher half direct map.
     pub offset: u64,
 }
 
@@ -221,7 +242,9 @@ pub struct LimineFramebuffer {
 #[derive(Debug)]
 pub struct LimineFramebufferResponse {
     pub revision: u64,
+    /// How many framebuffers are present.
     pub framebuffer_count: u64,
+    /// Pointer to an array of `framebuffer_count` pointers to struct [`LimineFramebuffer`] structures.
     pub framebuffers: LiminePtr<*const LimineFramebuffer>,
 }
 
@@ -278,6 +301,8 @@ pub struct Limine5LevelPagingResponse {
 }
 
 make_struct!(
+    /// The presence of this request will prompt the bootloader to turn on x86_64 5-level paging. It will not be
+    /// turned on if this request is not present. If the response pointer is unchanged, 5-level paging is engaged.
     struct Limine5LevelPagingRequest: [0x94469551da9b3192, 0xebe5e86db7382888] => {
         response: LiminePtr<Limine5LevelPagingResponse> = LiminePtr::DEFAULT
     };
@@ -358,7 +383,15 @@ pub enum LimineMemoryMapEntryType {
     AcpiNvs = 3,
     BadMemory = 4,
     BootloaderReclaimable = 5,
-    Kernel = 6, // kernel and modules
+    /// The kernel and modules loaded are not marked as usable memory. They are
+    /// marked as Kernel/Modules. The entries are guaranteed to be sorted by base
+    /// address, lowest to highest. Usable and bootloader reclaimable entries are
+    /// guaranteed to be 4096 byte aligned for both base and length. Usable and
+    /// bootloader reclaimable entries are guaranteed not to overlap with any
+    /// other entry. To the contrary, all non-usable entries (including kernel/modules)
+    /// are not guaranteed any alignment, nor is it guaranteed that they do not
+    /// overlap other entries.
+    KernelAndModules = 6,
     Framebuffer = 7,
 }
 
@@ -374,7 +407,9 @@ pub struct LimineMmapEntry {
 #[derive(Debug)]
 pub struct LimineMmapResponse {
     pub revision: u64,
+    /// How many memory map entries are present.
     pub entry_count: u64,
+    /// Pointer to an array of `entry_count` pointers to struct [`LimineMmapEntry`] structures.
     pub entries: LiminePtr<*const LimineMmapEntry>,
 }
 
@@ -402,6 +437,7 @@ pub struct LimineEntryPointResponse {
 make_struct!(
     struct LimineEntryPointRequest: [0x13d86c035a1cd3e1, 0x2b0caa89d8f3026a] => {
         response: LiminePtr<LimineEntryPointResponse> = LiminePtr::DEFAULT,
+        /// The requested entry point.
         entry: LiminePtr<LimineEntryPoint> = LiminePtr::DEFAULT
     };
 );
@@ -411,6 +447,7 @@ make_struct!(
 #[derive(Debug)]
 pub struct LimineKernelFileResponse {
     pub revision: u64,
+    /// Pointer to the struct [`LimineFile`] structure for the kernel file.
     pub kernel_file: LiminePtr<LimineFile>,
 }
 
@@ -425,7 +462,9 @@ make_struct!(
 #[derive(Debug)]
 pub struct LimineModuleResponse {
     pub revision: u64,
+    /// How many modules are present.
     pub module_count: u64,
+    /// Pointer to an array of `module_count` pointers to struct [`LimineFile`] structures
     pub modules: LiminePtr<*const LimineFile>,
 }
 
@@ -448,6 +487,7 @@ make_struct!(
 #[derive(Debug)]
 pub struct LimineRsdpResponse {
     pub revision: u64,
+    /// Address of the RSDP table.
     pub address: LiminePtr<u8>,
 }
 
@@ -462,7 +502,9 @@ make_struct!(
 #[derive(Debug)]
 pub struct LimineSmbiosResponse {
     pub revision: u64,
+    /// Address of the 32-bit SMBIOS entry point. NULL if not present.
     pub entry_32: LiminePtr<u8>,
+    /// Address of the 64-bit SMBIOS entry point. NULL if not present.
     pub entry_64: LiminePtr<u8>,
 }
 
@@ -477,6 +519,7 @@ make_struct!(
 #[derive(Debug)]
 pub struct LimineEfiSystemTableResponse {
     pub revision: u64,
+    /// Address of EFI system table.
     pub address: LiminePtr<u8>,
 }
 
@@ -491,6 +534,7 @@ make_struct!(
 #[derive(Debug)]
 pub struct LimineBootTimeResponse {
     pub revision: u64,
+    /// The UNIX time on boot, in seconds, taken from the system RTC.
     pub boot_time: i64,
 }
 
@@ -505,7 +549,9 @@ make_struct!(
 #[derive(Debug)]
 pub struct LimineKernelAddressResponse {
     pub revision: u64,
+    /// The physical base address of the kernel.
     pub physical_base: u64,
+    /// The virtual base address of the kernel.
     pub virtual_base: u64,
 }
 
