@@ -48,6 +48,9 @@ macro_rules! make_struct {
         }
 
         impl $name {
+            // NOTE: The request ID is composed of 4 64-bit wide unsigned integers but the first
+            // two remain constant. This is refered as `LIMINE_COMMON_MAGIC` in the limine protocol
+            // header.
             pub const ID: [u64; 4] = [0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, $id1, $id2];
 
             pub const fn new(revision: u64) -> Self {

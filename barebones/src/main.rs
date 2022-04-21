@@ -1,6 +1,8 @@
 #![no_std]
 #![no_main]
 
+mod writer;
+
 use core::panic::PanicInfo;
 use limine_rs::*;
 
@@ -16,10 +18,7 @@ fn panic(_info: &PanicInfo) -> ! {
 // define the kernel's entry point function
 #[no_mangle]
 extern "C" fn x86_64_barebones_main() -> ! {
-    let terminal_response = TERMINAL_REQUEST.response.get().unwrap();
-    let term_write = terminal_response.write();
-
-    term_write("Hello, rusty world!");
+    println!("Hello, rusty world!");
 
     loop {}
 }

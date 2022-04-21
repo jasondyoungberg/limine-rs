@@ -5,4 +5,9 @@ barebones/iso_root
 barebones/barebones.iso
 barebones/target
 
+test/limine
+test/iso_root
+test/limine-rs-test.iso
+test/target
+
 *.log
