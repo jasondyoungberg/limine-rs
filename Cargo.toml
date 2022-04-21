@@ -1,6 +1,13 @@
 [package]
 name = "limine-rs"
+description = "Rust crate for parsing the limine boot protocol structures"
 version = "0.1.0"
 edition = "2021"
+authors = ["Anhad Singh <andypythonappdeveloper@gmail.com>"]
+license = "MIT/Apache-2.0"
+repository = "https://github.com/limine-bootloader/limine-rs"
+
+readme = "README.md"
+categories = ["no-std"]
 
 [dependencies]
