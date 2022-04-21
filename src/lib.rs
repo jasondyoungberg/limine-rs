@@ -1,3 +1,5 @@
+//! Rust crate for parsing the limine boot protocol structures.
+
 #![no_std]
 
 use core::fmt::Debug;
