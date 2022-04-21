@@ -283,7 +283,70 @@ make_struct!(
     };
 );
 
-// todo: smp request tag:
+// smp request tag:
+#[repr(C)]
+#[derive(Debug)]
+pub struct LimineSmpInfo {
+    /// ACPI Processor UID as specified by the MADT.
+    pub processor_id: u32,
+    /// Local APIC ID of the processor as specified by the MADT.
+    pub lapic_id: u32,
+    pub reserved: u64,
+    /// An atomic write to this field causes the parked CPU to jump to the
+    /// written address, on a 64KiB (or Stack Size Request size) stack. A pointer
+    /// to the struct [`LimineSmpInfo`] structure of the CPU is passed in RDI. Other
+    /// than that, the CPU state will be the same as described for the bootstrap
+    /// processor. This field is unused for the structure describing the bootstrap
+    /// processor.
+    pub goto_address: u64,
+    /// A free for use field.
+    pub extra_argument: u64,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct LimineSmpResponse {
+    pub revision: u64,
+    /// Bit 0: X2APIC has been enabled.
+    pub flags: u32,
+    /// The Local APIC ID of the bootstrap processor.
+    pub bsp_lapic_id: u32,
+    /// How many CPUs are present. It includes the bootstrap processor.
+    pub cpu_count: u64,
+    /// Pointer to an array of `cpu_count` pointers to struct [`LimineSmpInfo`]
+    /// structures.
+    pub cpus: LiminePtr<*mut LimineSmpInfo>,
+}
+
+impl LimineSmpResponse {
+    /// Return's the SMP info array pointer as a mutable rust slice.
+    ///
+    /// ## Safety
+    ///
+    /// If this tag was returned by a bootloader mutating the slice must conform to the following
+    /// rules in order to not trigger UB:
+    ///
+    /// - Writing to [`LimineSmpInfo::goto_address`] will cause it to start executing at the
+    /// provided address.
+    /// - The address pointed by [`LimineSmpInfo::goto_address`] must be that of a
+    /// `extern "C" fn(&'static LimineSmpInfo) -> !`, this also means that once written this
+    /// struct must not be mutated any further.
+    pub fn cpus(&mut self) -> Option<&'static mut [LimineSmpInfo]> {
+        self.cpus.get().map(|entry| unsafe {
+            core::slice::from_raw_parts_mut(*entry, self.cpu_count as usize)
+        })
+    }
+}
+
+make_struct!(
+    /// The presence of this request will prompt the bootloader to bootstrap the
+    /// secondary processors. This will not be done if this request is not present.
+    struct LimineSmpRequest: [0x95a67b819a1b857e, 0xa0b61b723b6a73e0] => {
+        response: LiminePtr<LimineSmpResponse> = LiminePtr::DEFAULT,
+        /// Bit 0: Enable X2APIC, if possible.
+        flags: u32 = 0
+    };
+);
 
 // memory map request tag:
 #[repr(u32)]
