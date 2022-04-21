@@ -20,5 +20,7 @@ jobs:
       with:
         profile: minimal
         toolchain: nightly
+    - name: Rust Version
+      run: rustup --version && rustc --version
     - name: Build the limine-rs crate
       run: cargo build --verbose
