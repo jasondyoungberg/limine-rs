@@ -2,19 +2,24 @@
 
 use core::fmt::Debug;
 
-// misc
 #[repr(transparent)]
 pub struct LiminePtr<T: Debug>(*const T);
 
 impl<T: Debug> LiminePtr<T> {
     const DEFAULT: LiminePtr<T> = Self(core::ptr::null_mut() as *const T);
 
-    fn raw_get(&self) -> *const T {
+    /// Returns the raw pointer.
+    ///
+    /// # Safety
+    /// The returned pointer may-be null.
+    unsafe fn raw_get(&self) -> *const T {
         self.0
     }
 
+    /// Retrieve the value of the pointer. Returns an optional value since the pointer
+    /// may be null.
     pub fn get(&self) -> Option<&'static T> {
-        let raw_ptr = self.raw_get();
+        let raw_ptr = unsafe { self.raw_get() };
 
         if raw_ptr.is_null() {
             None
@@ -27,7 +32,7 @@ impl<T: Debug> LiminePtr<T> {
 impl LiminePtr<char> {
     /// Converts the limine string pointer into a rust string.
     pub fn to_string(&self) -> &'static str {
-        let mut ptr = self.raw_get() as *const u8;
+        let mut ptr = unsafe { self.raw_get() } as *const u8;
 
         // 1. Calculate the length of the string.
         let mut str_len = 0;
@@ -56,7 +61,7 @@ impl LiminePtr<char> {
 impl<T: 'static + Debug> Debug for LiminePtr<T> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_tuple("LiminePtr")
-            .field(&format_args!("{:#x?}", self.raw_get()))
+            .field(&format_args!("{:#x?}", unsafe { self.raw_get() }))
             .finish()
     }
 }
@@ -203,8 +208,22 @@ pub struct LimineFramebuffer {
 pub struct LimineFramebufferResponse {
     pub revision: u64,
     pub framebuffer_count: u64,
-    // todo: add a helper function to convert the limine framebuffer array to a rust array.
     pub framebuffers: LiminePtr<LimineFramebuffer>,
+}
+
+impl LimineFramebufferResponse {
+    pub fn framebuffers(&self) -> Option<&'static [LimineFramebuffer]> {
+        self.framebuffers.get().map(|_| unsafe {
+            // SAFETY:
+            //
+            // - The pointer is non-null
+            // - The bootloader is expected to provide a valid pointer and valid length.
+            core::slice::from_raw_parts(
+                self.framebuffers.raw_get(),
+                self.framebuffer_count as usize,
+            )
+        })
+    }
 }
 
 make_struct!(
@@ -227,7 +246,7 @@ pub struct LimineTerminalResponse {
 
 impl LimineTerminalResponse {
     pub fn write(&self) -> impl Fn(&str) {
-        let __fn_ptr = self.write.raw_get();
+        let __fn_ptr = unsafe { self.write.raw_get() };
         let __term_func =
             unsafe { core::mem::transmute::<*const (), extern "C" fn(*const i8, u64)>(__fn_ptr) };
 
@@ -295,8 +314,19 @@ make_struct!(
 pub struct LimineModuleResponse {
     pub revision: u64,
     pub module_count: u64,
-    // todo: add a helper function to convert the limine modules array to a rust array.
     pub modules: LiminePtr<LimineFile>,
+}
+
+impl LimineModuleResponse {
+    pub fn modules(&self) -> Option<&'static [LimineFile]> {
+        self.modules.get().map(|_| unsafe {
+            // SAFETY:
+            //
+            // - The pointer is non-null
+            // - The bootloader is expected to provide a valid pointer and valid length.
+            core::slice::from_raw_parts(self.modules.raw_get(), self.module_count as usize)
+        })
+    }
 }
 
 make_struct!(
