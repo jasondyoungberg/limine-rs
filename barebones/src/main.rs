@@ -6,9 +6,8 @@ mod writer;
 use core::panic::PanicInfo;
 use limine_rs::*;
 
-#[link_section = ".limine_requests"]
-#[used]
 static TERMINAL_REQUEST: LimineTerminalRequest = LimineTerminalRequest::new(0);
+static BOOTLOADER_INFO: LimineBootInfoRequest = LimineBootInfoRequest::new(0);
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
@@ -18,7 +17,8 @@ fn panic(_info: &PanicInfo) -> ! {
 // define the kernel's entry point function
 #[no_mangle]
 extern "C" fn x86_64_barebones_main() -> ! {
-    println!("Hello, rusty world!");
+    println!("Hello, rusty world!\n");
+    println!("bootloader_info: {BOOTLOADER_INFO:#x?}");
 
     loop {}
 }

@@ -1,10 +1,12 @@
 #![no_std]
 
+use core::fmt::Debug;
+
 // misc
 #[repr(transparent)]
-pub struct LiminePtr<T>(*const T);
+pub struct LiminePtr<T: Debug>(*const T);
 
-impl<T> LiminePtr<T> {
+impl<T: Debug> LiminePtr<T> {
     const DEFAULT: LiminePtr<T> = Self(core::ptr::null_mut() as *const T);
 
     fn raw_get(&self) -> *const T {
@@ -27,8 +29,16 @@ impl LiminePtr<char> {
     // string to a rust string.
 }
 
+impl<T: 'static + Debug> Debug for LiminePtr<T> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("LiminePtr")
+            .field(&format_args!("{:#x?}", self.raw_get()))
+            .finish()
+    }
+}
+
 // maker trait implementations for limine ptr
-unsafe impl<T> Sync for LiminePtr<T> {}
+unsafe impl<T: Debug> Sync for LiminePtr<T> {}
 
 /// Used to create the limine request struct.
 macro_rules! make_struct {
@@ -40,6 +50,7 @@ macro_rules! make_struct {
     ) => {
         $(#[$meta])*
         #[repr(C)]
+        #[derive(Debug)]
         pub struct $name {
             id: [u64; 4],
             revision: u64,
@@ -62,6 +73,7 @@ macro_rules! make_struct {
                 }
             }
 
+            // generate a getter method for each field:
             $($(#[$field_meta])* pub const fn $field_name(mut self, value: $field_ty) -> Self {
 				self.$field_name = value;
 				self
@@ -72,6 +84,7 @@ macro_rules! make_struct {
 
 // misc structures:
 
+#[derive(Debug)]
 pub struct LimineUuid {
     pub a: u32,
     pub b: u16,
@@ -79,6 +92,7 @@ pub struct LimineUuid {
     pub d: [u8; 8],
 }
 
+#[derive(Debug)]
 pub struct LimineFile {
     pub revision: u64,
     pub base: LiminePtr<u8>,
@@ -96,6 +110,8 @@ pub struct LimineFile {
 }
 
 // boot info request tag:
+#[repr(C)]
+#[derive(Debug)]
 pub struct LimineBootInfoResponse {
     pub revision: u64,
 
@@ -111,6 +127,7 @@ make_struct!(
 
 // stack size request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineStackSizeResponse {
     pub revision: u64,
 }
@@ -124,6 +141,7 @@ make_struct!(
 
 // HHDM request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineHhdmResponse {
     pub revision: u64,
     pub offset: u64,
@@ -137,6 +155,7 @@ make_struct!(
 
 // framebuffer request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineFramebuffer {
     pub address: LiminePtr<u8>,
     pub width: u16,
@@ -156,6 +175,7 @@ pub struct LimineFramebuffer {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineFramebufferResponse {
     pub revision: u64,
     pub framebuffer_count: u64,
@@ -171,6 +191,7 @@ make_struct!(
 
 // terminal request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineTerminalResponse {
     pub revision: u64,
 
@@ -201,6 +222,7 @@ make_struct!(
 
 // 5-level paging request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct Limine5LevelPagingResponse {
     pub revision: u64,
 }
@@ -216,6 +238,7 @@ make_struct!(
 
 // entry point request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineEntryPointResponse {
     pub revision: u64,
 }
@@ -230,6 +253,7 @@ make_struct!(
 
 // kernel file request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineKernelFileResponse {
     pub revision: u64,
     pub kernel_file: LiminePtr<LimineFile>,
@@ -243,6 +267,7 @@ make_struct!(
 
 // module request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineModuleResponse {
     pub revision: u64,
     pub module_count: u64,
@@ -258,6 +283,7 @@ make_struct!(
 
 // RSDP request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineRsdpResponse {
     pub revision: u64,
     pub address: LiminePtr<u8>,
@@ -271,6 +297,7 @@ make_struct!(
 
 // SMBIOS request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineSmbiosResponse {
     pub revision: u64,
     pub entry_32: LiminePtr<u8>,
@@ -285,6 +312,7 @@ make_struct!(
 
 // EFI system table request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineEfiSystemTableResponse {
     pub revision: u64,
     pub address: LiminePtr<u8>,
@@ -298,6 +326,7 @@ make_struct!(
 
 // boot time request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineBootTimeResponse {
     pub revision: u64,
     pub boot_time: i64,
@@ -311,6 +340,7 @@ make_struct!(
 
 // kernel address request tag:
 #[repr(C)]
+#[derive(Debug)]
 pub struct LimineKernelAddressResponse {
     pub revision: u64,
     pub physical_base: u64,
