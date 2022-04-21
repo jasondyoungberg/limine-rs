@@ -18,7 +18,14 @@ fn panic(_info: &PanicInfo) -> ! {
 #[no_mangle]
 extern "C" fn x86_64_barebones_main() -> ! {
     println!("Hello, rusty world!\n");
-    println!("bootloader_info: {BOOTLOADER_INFO:#x?}");
+
+    let bootloader_info = BOOTLOADER_INFO.response.get().unwrap();
+
+    println!(
+        "bootloader: (name={}, version={})",
+        bootloader_info.name.to_string(),
+        bootloader_info.version.to_string()
+    );
 
     loop {}
 }

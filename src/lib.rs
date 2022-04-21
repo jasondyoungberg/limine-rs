@@ -25,8 +25,32 @@ impl<T: Debug> LiminePtr<T> {
 }
 
 impl LiminePtr<char> {
-    // todo: create a to_string() helper function to convert the null terminated
-    // string to a rust string.
+    /// Converts the limine string pointer into a rust string.
+    pub fn to_string(&self) -> &'static str {
+        let mut ptr = self.raw_get() as *const u8;
+
+        // 1. Calculate the length of the string.
+        let mut str_len = 0;
+
+        // SAFTEY: We stop at the first null byte.
+        unsafe {
+            while *ptr != 0 {
+                ptr = ptr.offset(1);
+                str_len += 1;
+            }
+        }
+
+        // 2. Convert the string pointer to a rust slice.
+        //
+        // SAFETY: We know that the string is null terminated and that the length
+        // is calculated correctly.
+        let slice = unsafe { core::slice::from_raw_parts(self.raw_get() as *const u8, str_len) };
+
+        // 3. Convert the slice to a rust string.
+        //
+        // SAFETY: Limine strings are ensured to have valid UTF-8.
+        unsafe { core::str::from_utf8_unchecked(slice) }
+    }
 }
 
 impl<T: 'static + Debug> Debug for LiminePtr<T> {
