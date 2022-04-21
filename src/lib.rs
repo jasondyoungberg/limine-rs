@@ -2,6 +2,10 @@
 
 use core::fmt::Debug;
 
+#[derive(Debug)]
+#[repr(transparent)]
+pub struct LimineEntryPoint(*const ());
+
 #[repr(transparent)]
 pub struct LiminePtr<T: Debug>(*const T);
 
@@ -12,6 +16,7 @@ impl<T: Debug> LiminePtr<T> {
     ///
     /// # Safety
     /// The returned pointer may-be null.
+    #[inline]
     unsafe fn raw_get(&self) -> *const T {
         self.0
     }
@@ -55,6 +60,13 @@ impl LiminePtr<char> {
         //
         // SAFETY: Limine strings are ensured to have valid UTF-8.
         unsafe { core::str::from_utf8_unchecked(slice) }
+    }
+}
+
+impl LiminePtr<LimineEntryPoint> {
+    #[inline]
+    pub const fn new(entry_point: fn() -> !) -> Self {
+        Self(entry_point as *const _)
     }
 }
 
@@ -277,7 +289,7 @@ make_struct!(
 );
 
 // todo: smp request tag:
-// todo: smp memory map tag:
+// todo: memory map request tag:
 
 // entry point request tag:
 #[repr(C)]
@@ -286,11 +298,10 @@ pub struct LimineEntryPointResponse {
     pub revision: u64,
 }
 
-// todo: add helper function to get a rusty function pointer to the entry point.
 make_struct!(
     struct LimineEntryPointRequest: [0x13d86c035a1cd3e1, 0x2b0caa89d8f3026a] => {
         response: LiminePtr<LimineEntryPointResponse> = LiminePtr::DEFAULT,
-        entry: LiminePtr<()> = LiminePtr::DEFAULT
+        entry: LiminePtr<LimineEntryPoint> = LiminePtr::DEFAULT
     };
 );
 
