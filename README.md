@@ -1,5 +1,10 @@
 # `limine-rs`
 
+![workflow](https://github.com/limine-bootloader/limine-rs/workflows/Build/badge.svg)
+![crates.io](https://img.shields.io/crates/d/limine-rs)
+![crates.io](https://img.shields.io/crates/v/limine-rs)
+![docs.rs](https://docs.rs/limine-rs/badge.svg)
+
 Rust crate for parsing the limine boot protocol structures.
 
 ## Resources
