@@ -1,5 +1,5 @@
 [package]
-name = "limine-rs"
+name = "limine"
 description = "Rust crate for parsing the limine boot protocol structures"
 version = "0.1.0"
 edition = "2021"
