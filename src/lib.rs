@@ -427,7 +427,7 @@ pub struct LimineMemmapResponse {
     pub revision: u64,
     /// How many memory map entries are present.
     pub entry_count: u64,
-    /// Pointer to an array of `entry_count` pointers to struct [`LimineMmapEntry`] structures.
+    /// Pointer to an array of `entry_count` pointers to struct [`LimineMemmapEntry`] structures.
     pub entries: LiminePtr<*const LimineMemmapEntry>,
 }
 

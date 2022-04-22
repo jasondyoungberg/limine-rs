@@ -4,7 +4,7 @@
 mod writer;
 
 use core::panic::PanicInfo;
-use limine_rs::*;
+use limine::*;
 
 static TERMINAL_REQUEST: LimineTerminalRequest = LimineTerminalRequest::new(0);
 static BOOTLOADER_INFO: LimineBootInfoRequest = LimineBootInfoRequest::new(0);

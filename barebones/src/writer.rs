@@ -1,7 +1,7 @@
 use core::fmt;
 use core::fmt::Write;
 
-use limine_rs::LimineTerminalResponse;
+use limine::LimineTerminalResponse;
 
 // Used to write to the screen.
 use crate::TERMINAL_REQUEST;
