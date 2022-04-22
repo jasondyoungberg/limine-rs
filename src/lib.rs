@@ -265,12 +265,29 @@ make_struct!(
 // terminal request tag:
 #[repr(C)]
 #[derive(Debug)]
+pub struct LimineTerminal {
+    /// Number of rows provided by the terminal.
+    pub rows: u32,
+    /// Number of columns provided by the terminal.
+    pub cols: u32,
+    /// The framebuffer associated with this terminal.
+    pub framebuffer: LiminePtr<LimineFramebuffer>,
+}
+
+#[repr(C)]
+#[derive(Debug)]
 pub struct LimineTerminalResponse {
     pub revision: u64,
 
-    pub columns: u32,
-    pub rows: u32,
-
+    /// How many terminals are present.
+    pub terminal_count: u64,
+    /// Pointer to an array of `terminal_count` pointers to struct `limine_terminal` structures.
+    pub terminals: LiminePtr<*const LimineTerminal>,
+    /// Physical pointer to the terminal `write()` function. The function is not thread-safe, nor
+    /// reentrant, per-terminal. This means multiple terminals may be called simultaneously, and
+    /// multiple callbacks may be handled simultaneously. The terminal parameter points to the
+    /// [`LimineTerminal`] structure to use to output the string; the string parameter points to
+    /// a string to print; the length paremeter contains the length, in bytes, of the string to print.
     write: LiminePtr<()>,
 }
 
@@ -287,6 +304,7 @@ impl LimineTerminalResponse {
 }
 
 make_struct!(
+    /// Omitting this request will cause the bootloader to not initialise the terminal service.
     struct LimineTerminalRequest: [0x0785a0aea5d0750f, 0x1c1936fee0d6cf6e] => {
         response: LiminePtr<LimineTerminalResponse> = LiminePtr::DEFAULT,
         callback: LiminePtr<()> = LiminePtr::DEFAULT

@@ -6,9 +6,9 @@ version = 3
 name = "barebones"
 version = "0.1.0"
 dependencies = [
- "limine-rs",
+ "limine",
 ]
 
 [[package]]
-name = "limine-rs"
+name = "limine"
 version = "0.1.0"
