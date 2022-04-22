@@ -397,7 +397,7 @@ pub enum LimineMemoryMapEntryType {
 
 #[repr(C)]
 #[derive(Debug)]
-pub struct LimineMmapEntry {
+pub struct LimineMemmapEntry {
     pub base: u64,
     pub len: u64,
     pub typ: LimineMemoryMapEntryType,
@@ -405,16 +405,16 @@ pub struct LimineMmapEntry {
 
 #[repr(C)]
 #[derive(Debug)]
-pub struct LimineMmapResponse {
+pub struct LimineMemmapResponse {
     pub revision: u64,
     /// How many memory map entries are present.
     pub entry_count: u64,
     /// Pointer to an array of `entry_count` pointers to struct [`LimineMmapEntry`] structures.
-    pub entries: LiminePtr<*const LimineMmapEntry>,
+    pub entries: LiminePtr<*const LimineMemmapEntry>,
 }
 
-impl LimineMmapResponse {
-    pub fn mmap(&self) -> Option<&'static [LimineMmapEntry]> {
+impl LimineMemmapResponse {
+    pub fn mmap(&self) -> Option<&'static [LimineMemmapEntry]> {
         self.entries
             .get()
             .map(|entry| unsafe { core::slice::from_raw_parts(*entry, self.entry_count as usize) })
@@ -423,7 +423,7 @@ impl LimineMmapResponse {
 
 make_struct!(
     struct LimineMmapRequest: [0x67cf3d9d378a806f, 0xe304acdfc50c3c62] => {
-        response: LiminePtr<LimineMmapResponse> = LiminePtr::DEFAULT
+        response: LiminePtr<LimineMemmapResponse> = LiminePtr::DEFAULT
     };
 );
 
