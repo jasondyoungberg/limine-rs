@@ -21,7 +21,7 @@ extern "C" fn x86_64_barebones_main() -> ! {
     println!("Hello, rusty world!\n");
 
     let bootloader_info = BOOTLOADER_INFO
-        .response
+        .get_response()
         .get()
         .expect("barebones: recieved no bootloader info");
 
@@ -32,7 +32,12 @@ extern "C" fn x86_64_barebones_main() -> ! {
     );
 
     let mmap_err = "barebones: recieved no mmap";
-    let mmap = MMAP.response.get().expect(mmap_err).mmap().expect(mmap_err);
+    let mmap = MMAP
+        .get_response()
+        .get()
+        .expect(mmap_err)
+        .mmap()
+        .expect(mmap_err);
 
     println!("mmap: {:#x?}", mmap);
 

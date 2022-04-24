@@ -16,7 +16,7 @@ impl core::fmt::Write for Writer {
             if let Some(writer) = CACHED {
                 writer.write()(s);
             } else {
-                let response = TERMINAL_REQUEST.response.get().unwrap();
+                let response = TERMINAL_REQUEST.get_response().get().unwrap();
                 let writer = response.write();
 
                 writer(s);

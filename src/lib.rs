@@ -5,6 +5,7 @@
 
 #![no_std]
 
+use core::cell::UnsafeCell;
 use core::fmt::Debug;
 
 #[derive(Debug)]
@@ -90,7 +91,7 @@ unsafe impl<T: Debug> Sync for LiminePtr<T> {}
 macro_rules! make_struct {
     (
         $(#[$meta:meta])*
-        struct $name:ident: [$id1:expr, $id2:expr] => {
+        struct $name:ident: [$id1:expr, $id2:expr] => $response_ty:ty {
             $($(#[$field_meta:meta])* $field_name:ident : $field_ty:ty = $field_default:expr),*
         };
     ) => {
@@ -101,7 +102,13 @@ macro_rules! make_struct {
             id: [u64; 4],
             revision: u64,
 
-            pub $($field_name: $field_ty),*
+            // NOTE: The response is required to be wrapped inside an unsafe cell, since
+            // by default the response is set to NULL and when the compiler does not see
+            // any writes to the field, it is free to assume that the response is NULL. In
+            // our situation the bootloader mutates the field and we need to ensure that
+            // the compiler does not optimize the read away.
+            response: UnsafeCell<LiminePtr<$response_ty>>,
+            $(pub $field_name: $field_ty),*
         }
 
         impl $name {
@@ -115,8 +122,13 @@ macro_rules! make_struct {
                     id: Self::ID,
                     revision,
 
+                    response: UnsafeCell::new(LiminePtr::DEFAULT),
                     $($field_name: $field_default),*
                 }
+            }
+
+            pub fn get_response(&self) -> LiminePtr<$response_ty> {
+                unsafe { core::ptr::read_volatile(self.response.get()) }
             }
 
             // generate a getter method for each field:
@@ -125,6 +137,9 @@ macro_rules! make_struct {
 				self
 			})*
         }
+
+        // maker trait implementations for limine request struct:
+        unsafe impl Sync for $name {}
     };
 }
 
@@ -182,9 +197,7 @@ pub struct LimineBootInfoResponse {
 }
 
 make_struct!(
-    struct LimineBootInfoRequest: [0xf55038d8e2a1202f, 0x279426fcf5f59740] => {
-        response: LiminePtr<LimineBootInfoResponse> = LiminePtr::DEFAULT
-    };
+    struct LimineBootInfoRequest: [0xf55038d8e2a1202f, 0x279426fcf5f59740] => LimineBootInfoResponse {};
 );
 
 // stack size request tag:
@@ -195,8 +208,7 @@ pub struct LimineStackSizeResponse {
 }
 
 make_struct!(
-    struct LimineStackSizeRequest: [0x224ef0460a8e8926, 0xe1cb0fc25f46ea3d] => {
-        response: LiminePtr<LimineStackSizeResponse> = LiminePtr::DEFAULT,
+    struct LimineStackSizeRequest: [0x224ef0460a8e8926, 0xe1cb0fc25f46ea3d] => LimineStackSizeResponse {
         /// The requested stack size (also used for SMP processors).
         stack_size: u64 = 0
     };
@@ -212,9 +224,7 @@ pub struct LimineHhdmResponse {
 }
 
 make_struct!(
-    struct LimineHhdmRequest: [0x48dcf1cb8ad2b852, 0x63984e959a98244b] => {
-        response: LiminePtr<LimineHhdmResponse> = LiminePtr::DEFAULT
-    };
+    struct LimineHhdmRequest: [0x48dcf1cb8ad2b852, 0x63984e959a98244b] => LimineHhdmResponse {};
 );
 
 // framebuffer request tag:
@@ -257,9 +267,7 @@ impl LimineFramebufferResponse {
 }
 
 make_struct!(
-    struct LimineFramebufferRequest: [0xcbfe81d7dd2d1977, 0x063150319ebc9b71] => {
-        response: LiminePtr<LimineFramebufferResponse> = LiminePtr::DEFAULT
-    };
+    struct LimineFramebufferRequest: [0xcbfe81d7dd2d1977, 0x063150319ebc9b71] => LimineFramebufferResponse {};
 );
 
 // terminal request tag:
@@ -305,8 +313,7 @@ impl LimineTerminalResponse {
 
 make_struct!(
     /// Omitting this request will cause the bootloader to not initialise the terminal service.
-    struct LimineTerminalRequest: [0x0785a0aea5d0750f, 0x1c1936fee0d6cf6e] => {
-        response: LiminePtr<LimineTerminalResponse> = LiminePtr::DEFAULT,
+    struct LimineTerminalRequest: [0x0785a0aea5d0750f, 0x1c1936fee0d6cf6e] => LimineTerminalResponse {
         callback: LiminePtr<()> = LiminePtr::DEFAULT
     };
 );
@@ -321,9 +328,7 @@ pub struct Limine5LevelPagingResponse {
 make_struct!(
     /// The presence of this request will prompt the bootloader to turn on x86_64 5-level paging. It will not be
     /// turned on if this request is not present. If the response pointer is unchanged, 5-level paging is engaged.
-    struct Limine5LevelPagingRequest: [0x94469551da9b3192, 0xebe5e86db7382888] => {
-        response: LiminePtr<Limine5LevelPagingResponse> = LiminePtr::DEFAULT
-    };
+    struct Limine5LevelPagingRequest: [0x94469551da9b3192, 0xebe5e86db7382888] => Limine5LevelPagingResponse {};
 );
 
 // smp request tag:
@@ -384,8 +389,7 @@ impl LimineSmpResponse {
 make_struct!(
     /// The presence of this request will prompt the bootloader to bootstrap the
     /// secondary processors. This will not be done if this request is not present.
-    struct LimineSmpRequest: [0x95a67b819a1b857e, 0xa0b61b723b6a73e0] => {
-        response: LiminePtr<LimineSmpResponse> = LiminePtr::DEFAULT,
+    struct LimineSmpRequest: [0x95a67b819a1b857e, 0xa0b61b723b6a73e0] => LimineSmpResponse {
         /// Bit 0: Enable X2APIC, if possible.
         flags: u32 = 0
     };
@@ -440,9 +444,7 @@ impl LimineMemmapResponse {
 }
 
 make_struct!(
-    struct LimineMmapRequest: [0x67cf3d9d378a806f, 0xe304acdfc50c3c62] => {
-        response: LiminePtr<LimineMemmapResponse> = LiminePtr::DEFAULT
-    };
+    struct LimineMmapRequest: [0x67cf3d9d378a806f, 0xe304acdfc50c3c62] => LimineMemmapResponse {};
 );
 
 // entry point request tag:
@@ -453,8 +455,7 @@ pub struct LimineEntryPointResponse {
 }
 
 make_struct!(
-    struct LimineEntryPointRequest: [0x13d86c035a1cd3e1, 0x2b0caa89d8f3026a] => {
-        response: LiminePtr<LimineEntryPointResponse> = LiminePtr::DEFAULT,
+    struct LimineEntryPointRequest: [0x13d86c035a1cd3e1, 0x2b0caa89d8f3026a] => LimineEntryPointResponse {
         /// The requested entry point.
         entry: LiminePtr<LimineEntryPoint> = LiminePtr::DEFAULT
     };
@@ -470,9 +471,7 @@ pub struct LimineKernelFileResponse {
 }
 
 make_struct!(
-    struct LimineKernelFileRequest: [0xad97e90e83f1ed67, 0x31eb5d1c5ff23b69] => {
-        response: LiminePtr<LimineEntryPointResponse> = LiminePtr::DEFAULT
-    };
+    struct LimineKernelFileRequest: [0xad97e90e83f1ed67, 0x31eb5d1c5ff23b69] => LimineEntryPointResponse {};
 );
 
 // module request tag:
@@ -495,9 +494,7 @@ impl LimineModuleResponse {
 }
 
 make_struct!(
-    struct LimineModuleRequest: [0x3e7e279702be32af, 0xca1c4f3bd1280cee] => {
-        response: LiminePtr<LimineModuleResponse> = LiminePtr::DEFAULT
-    };
+    struct LimineModuleRequest: [0x3e7e279702be32af, 0xca1c4f3bd1280cee] => LimineModuleResponse {};
 );
 
 // RSDP request tag:
@@ -510,9 +507,7 @@ pub struct LimineRsdpResponse {
 }
 
 make_struct!(
-    struct LimineRsdpRequest: [0xc5e77b6b397e7b43, 0x27637845accdcf3c] => {
-        response: LiminePtr<LimineRsdpResponse> = LiminePtr::DEFAULT
-    };
+    struct LimineRsdpRequest: [0xc5e77b6b397e7b43, 0x27637845accdcf3c] => LimineRsdpResponse {};
 );
 
 // SMBIOS request tag:
@@ -527,9 +522,7 @@ pub struct LimineSmbiosResponse {
 }
 
 make_struct!(
-    struct LimineSmbiosRequest: [0x9e9046f11e095391, 0xaa4a520fefbde5ee] => {
-        response: LiminePtr<LimineSmbiosResponse> = LiminePtr::DEFAULT
-    };
+    struct LimineSmbiosRequest: [0x9e9046f11e095391, 0xaa4a520fefbde5ee] => LimineSmbiosResponse {};
 );
 
 // EFI system table request tag:
@@ -542,9 +535,7 @@ pub struct LimineEfiSystemTableResponse {
 }
 
 make_struct!(
-    struct LimineEfiSystemTableRequest: [0x5ceba5163eaaf6d6, 0x0a6981610cf65fcc] => {
-        response: LiminePtr<LimineEfiSystemTableResponse> = LiminePtr::DEFAULT
-    };
+    struct LimineEfiSystemTableRequest: [0x5ceba5163eaaf6d6, 0x0a6981610cf65fcc] => LimineEfiSystemTableResponse {};
 );
 
 // boot time request tag:
@@ -557,9 +548,7 @@ pub struct LimineBootTimeResponse {
 }
 
 make_struct!(
-    struct LimineBootTimeRequest: [0x502746e184c088aa, 0xfbc5ec83e6327893] => {
-        response: LiminePtr<LimineBootTimeResponse> = LiminePtr::DEFAULT
-    };
+    struct LimineBootTimeRequest: [0x502746e184c088aa, 0xfbc5ec83e6327893] => LimineBootTimeResponse {};
 );
 
 // kernel address request tag:
@@ -574,7 +563,5 @@ pub struct LimineKernelAddressResponse {
 }
 
 make_struct!(
-    struct LimineKernelAddressRequest: [0x71ba76863cc55f63, 0xb2644a48c516a487] => {
-        response: LiminePtr<LimineKernelAddressResponse> = LiminePtr::DEFAULT
-    };
+    struct LimineKernelAddressRequest: [0x71ba76863cc55f63, 0xb2644a48c516a487] => LimineKernelAddressResponse {};
 );
