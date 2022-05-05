@@ -14,12 +14,14 @@ impl core::fmt::Write for Writer {
 
         unsafe {
             if let Some(writer) = CACHED {
-                writer.write()(s);
+                let terminal = writer.terminals().unwrap().first().unwrap();
+                writer.write().unwrap()(terminal, s);
             } else {
                 let response = TERMINAL_REQUEST.get_response().get().unwrap();
-                let writer = response.write();
+                let terminal = response.terminals().unwrap().first().unwrap();
+                let writer = response.write().unwrap();
 
-                writer(s);
+                writer(&terminal, s);
 
                 // initialize the cached response
                 CACHED = Some(response);

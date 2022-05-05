@@ -282,6 +282,17 @@ pub struct LimineTerminal {
     pub framebuffer: LiminePtr<LimineFramebuffer>,
 }
 
+#[repr(transparent)]
+struct LimineTerminalWrite(extern "C" fn(*const LimineTerminal, *const u8, u64));
+
+impl Debug for LimineTerminalWrite {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("LimineTerminalWrite")
+            .field(&format_args!("{:#x}", self.0 as usize))
+            .finish()
+    }
+}
+
 #[repr(C)]
 #[derive(Debug)]
 pub struct LimineTerminalResponse {
@@ -296,18 +307,22 @@ pub struct LimineTerminalResponse {
     /// multiple callbacks may be handled simultaneously. The terminal parameter points to the
     /// [`LimineTerminal`] structure to use to output the string; the string parameter points to
     /// a string to print; the length paremeter contains the length, in bytes, of the string to print.
-    write: LiminePtr<()>,
+    write: LiminePtr<Option<LimineTerminalWrite>>,
 }
 
 impl LimineTerminalResponse {
-    pub fn write(&self) -> impl Fn(&str) {
-        let __fn_ptr = unsafe { self.write.raw_get() };
-        let __term_func =
-            unsafe { core::mem::transmute::<*const (), extern "C" fn(*const i8, u64)>(__fn_ptr) };
+    pub fn terminals(&self) -> Option<&'static [LimineTerminal]> {
+        self.terminals.get().map(|entry| unsafe {
+            core::slice::from_raw_parts(*entry, self.terminal_count as usize)
+        })
+    }
 
-        move |txt| {
-            __term_func(txt.as_ptr() as *const i8, txt.len() as u64);
-        }
+    pub fn write(&self) -> Option<impl Fn(&LimineTerminal, &str)> {
+        let term_func = self.write.get()?.as_ref()?;
+
+        Some(move |terminal: &LimineTerminal, txt: &str| {
+            term_func.0(terminal as *const _, txt.as_ptr(), txt.len() as u64);
+        })
     }
 }
 
