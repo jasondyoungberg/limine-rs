@@ -1,5 +1,6 @@
 # 0.1.3
 * Fix the broken layout of the `LimineTerminal` structure.
+* Make use of NPO ([Null Pointer Optimization](https://doc.rust-lang.org/std/option/index.html#representation)) inside the `LiminePtr` structure for safety and to be more explicit.
 
 # 0.1.2
 * **Breaking**: The `write` function now takes a `&LimineTerminal` as an argument as expected. In addition to that, the
