@@ -18,8 +18,8 @@ xorriso -as mkisofs -b limine-cd.bin \
     --efi-boot limine-cd-efi.bin \
     -efi-boot-part --efi-boot-image --protective-msdos-label \
     iso_root -o barebones.iso
-limine/limine-s2deploy barebones.iso
+limine/limine-deploy barebones.iso
 rm -rf iso_root
 
 # 4. run the kernel
-qemu-system-x86_64 -cdrom barebones.iso --no-reboot
+qemu-system-x86_64 -cdrom barebones.iso --no-reboot -d int -D qemulog.log
