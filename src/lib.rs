@@ -4,46 +4,38 @@
 //! * [Limine Boot Protocol Specification](https://github.com/limine-bootloader/limine/blob/trunk/PROTOCOL.md)
 
 #![no_std]
+#![feature(const_nonnull_new)]
 
 use core::cell::UnsafeCell;
 use core::fmt::Debug;
+use core::ptr::NonNull;
 
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct LimineEntryPoint(*const ());
 
 #[repr(transparent)]
-pub struct LiminePtr<T: Debug>(*const T);
+pub struct LiminePtr<T: Debug>(Option<NonNull<T>>);
 
 impl<T: Debug> LiminePtr<T> {
-    const DEFAULT: LiminePtr<T> = Self(core::ptr::null_mut() as *const T);
+    const DEFAULT: LiminePtr<T> = Self(None);
 
-    /// Returns the raw pointer.
-    ///
-    /// # Safety
-    /// The returned pointer may-be null.
-    #[inline]
-    unsafe fn raw_get(&self) -> *const T {
-        self.0
+    pub fn as_ptr(&self) -> Option<*const T> {
+        Some(self.0?.as_ptr())
     }
 
     /// Retrieve the value of the pointer. Returns an optional value since the pointer
     /// may be null.
     pub fn get(&self) -> Option<&'static T> {
-        let raw_ptr = unsafe { self.raw_get() };
-
-        if raw_ptr.is_null() {
-            None
-        } else {
-            unsafe { Some(&*raw_ptr) }
-        }
+        Some(unsafe { self.0?.as_ref() })
     }
 }
 
 impl LiminePtr<char> {
     /// Converts the limine string pointer into a rust string.
-    pub fn to_string(&self) -> &'static str {
-        let mut ptr = unsafe { self.raw_get() } as *const u8;
+    pub fn to_string(&self) -> Option<&'static str> {
+        let mut ptr = self.as_ptr()? as *const u8;
+        let ptr_copy = ptr;
 
         // 1. Calculate the length of the string.
         let mut str_len = 0;
@@ -60,26 +52,26 @@ impl LiminePtr<char> {
         //
         // SAFETY: We know that the string is null terminated and that the length
         // is calculated correctly.
-        let slice = unsafe { core::slice::from_raw_parts(self.raw_get() as *const u8, str_len) };
+        let slice = unsafe { core::slice::from_raw_parts(ptr_copy, str_len) };
 
         // 3. Convert the slice to a rust string.
         //
         // SAFETY: Limine strings are ensured to have valid UTF-8.
-        unsafe { core::str::from_utf8_unchecked(slice) }
+        unsafe { Some(core::str::from_utf8_unchecked(slice)) }
     }
 }
 
 impl LiminePtr<LimineEntryPoint> {
     #[inline]
     pub const fn new(entry_point: fn() -> !) -> Self {
-        Self(entry_point as *const _)
+        Self(NonNull::new(entry_point as *mut _))
     }
 }
 
 impl<T: 'static + Debug> Debug for LiminePtr<T> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_tuple("LiminePtr")
-            .field(&format_args!("{:#x?}", unsafe { self.raw_get() }))
+            .field(&format_args!("{:#x?}", self.get()))
             .finish()
     }
 }

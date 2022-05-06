@@ -27,8 +27,8 @@ extern "C" fn x86_64_barebones_main() -> ! {
 
     println!(
         "bootloader: (name={}, version={})",
-        bootloader_info.name.to_string(),
-        bootloader_info.version.to_string()
+        bootloader_info.name.to_string().unwrap(),
+        bootloader_info.version.to_string().unwrap()
     );
 
     let mmap_err = "barebones: recieved no mmap";
