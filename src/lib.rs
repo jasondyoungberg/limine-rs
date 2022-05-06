@@ -130,9 +130,9 @@ macro_rules! make_struct {
 
             // generate a getter method for each field:
             $($(#[$field_meta])* pub const fn $field_name(mut self, value: $field_ty) -> Self {
-				self.$field_name = value;
-				self
-			})*
+                self.$field_name = value;
+                self
+            })*
         }
 
         // maker trait implementations for limine request struct:
