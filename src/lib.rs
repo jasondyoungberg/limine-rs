@@ -20,12 +20,17 @@ pub struct LiminePtr<T: Debug>(Option<NonNull<T>>);
 impl<T: Debug> LiminePtr<T> {
     const DEFAULT: LiminePtr<T> = Self(None);
 
-    pub fn as_ptr(&self) -> Option<*const T> {
+    #[inline]
+    pub fn as_mut_ptr(&self) -> Option<*mut T> {
         Some(self.0?.as_ptr())
     }
 
-    /// Retrieve the value of the pointer. Returns an optional value since the pointer
-    /// may be null.
+    #[inline]
+    pub fn as_ptr(&self) -> Option<*const T> {
+        self.as_mut_ptr().map(|e| e as _)
+    }
+
+    #[inline]
     pub fn get(&self) -> Option<&'static T> {
         Some(unsafe { self.0?.as_ref() })
     }
@@ -247,14 +252,17 @@ pub struct LimineFramebufferResponse {
     /// How many framebuffers are present.
     pub framebuffer_count: u64,
     /// Pointer to an array of `framebuffer_count` pointers to struct [`LimineFramebuffer`] structures.
-    pub framebuffers: LiminePtr<*const LimineFramebuffer>,
+    pub framebuffers: LiminePtr<LiminePtr<LimineFramebuffer>>,
 }
 
 impl LimineFramebufferResponse {
     pub fn framebuffers(&self) -> Option<&'static [LimineFramebuffer]> {
         self.framebuffers.get().map(|entry| unsafe {
-            core::slice::from_raw_parts(*entry, self.framebuffer_count as usize)
-        })
+            Some(core::slice::from_raw_parts(
+                entry.as_ptr()?,
+                self.framebuffer_count as usize,
+            ))
+        })?
     }
 }
 
@@ -285,7 +293,7 @@ pub struct LimineTerminalResponse {
     /// How many terminals are present.
     pub terminal_count: u64,
     /// Pointer to an array of `terminal_count` pointers to struct `limine_terminal` structures.
-    pub terminals: LiminePtr<*const LimineTerminal>,
+    pub terminals: LiminePtr<LiminePtr<LimineTerminal>>,
     /// Physical pointer to the terminal `write()` function. The function is not thread-safe, nor
     /// reentrant, per-terminal. This means multiple terminals may be called simultaneously, and
     /// multiple callbacks may be handled simultaneously. The terminal parameter points to the
@@ -297,8 +305,11 @@ pub struct LimineTerminalResponse {
 impl LimineTerminalResponse {
     pub fn terminals(&self) -> Option<&'static [LimineTerminal]> {
         self.terminals.get().map(|entry| unsafe {
-            core::slice::from_raw_parts(*entry, self.terminal_count as usize)
-        })
+            Some(core::slice::from_raw_parts(
+                entry.as_ptr()?,
+                self.terminal_count as usize,
+            ))
+        })?
     }
 
     pub fn write(&self) -> Option<impl Fn(&LimineTerminal, &str)> {
@@ -362,7 +373,7 @@ pub struct LimineSmpResponse {
     pub cpu_count: u64,
     /// Pointer to an array of `cpu_count` pointers to struct [`LimineSmpInfo`]
     /// structures.
-    pub cpus: LiminePtr<*mut LimineSmpInfo>,
+    pub cpus: LiminePtr<LiminePtr<LimineSmpInfo>>,
 }
 
 impl LimineSmpResponse {
@@ -380,8 +391,11 @@ impl LimineSmpResponse {
     /// struct must not be mutated any further.
     pub fn cpus(&mut self) -> Option<&'static mut [LimineSmpInfo]> {
         self.cpus.get().map(|entry| unsafe {
-            core::slice::from_raw_parts_mut(*entry, self.cpu_count as usize)
-        })
+            Some(core::slice::from_raw_parts_mut(
+                entry.as_mut_ptr()?,
+                self.cpu_count as usize,
+            ))
+        })?
     }
 }
 
@@ -431,14 +445,17 @@ pub struct LimineMemmapResponse {
     /// How many memory map entries are present.
     pub entry_count: u64,
     /// Pointer to an array of `entry_count` pointers to struct [`LimineMemmapEntry`] structures.
-    pub entries: LiminePtr<*const LimineMemmapEntry>,
+    pub entries: LiminePtr<LiminePtr<LimineMemmapEntry>>,
 }
 
 impl LimineMemmapResponse {
     pub fn mmap(&self) -> Option<&'static [LimineMemmapEntry]> {
-        self.entries
-            .get()
-            .map(|entry| unsafe { core::slice::from_raw_parts(*entry, self.entry_count as usize) })
+        self.entries.get().map(|entry| unsafe {
+            Some(core::slice::from_raw_parts(
+                entry.as_ptr()?,
+                self.entry_count as usize,
+            ))
+        })?
     }
 }
 
@@ -481,14 +498,17 @@ pub struct LimineModuleResponse {
     /// How many modules are present.
     pub module_count: u64,
     /// Pointer to an array of `module_count` pointers to struct [`LimineFile`] structures
-    pub modules: LiminePtr<*const LimineFile>,
+    pub modules: LiminePtr<LiminePtr<LimineFile>>,
 }
 
 impl LimineModuleResponse {
     pub fn modules(&self) -> Option<&'static [LimineFile]> {
-        self.modules
-            .get()
-            .map(|entry| unsafe { core::slice::from_raw_parts(*entry, self.module_count as usize) })
+        self.modules.get().map(|entry| unsafe {
+            Some(core::slice::from_raw_parts(
+                entry.as_ptr()?,
+                self.module_count as usize,
+            ))
+        })?
     }
 }
 
