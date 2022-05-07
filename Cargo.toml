@@ -15,4 +15,4 @@ requests-section = ["limine-proc"]
 default = []
 
 [dependencies]
-limine-proc = { path = "limine-proc", optional = true, version = "0.1.0" }
+limine-proc = { optional = true, version = "0.1.0" }
