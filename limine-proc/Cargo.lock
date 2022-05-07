@@ -3,13 +3,6 @@
 version = 3
 
 [[package]]
-name = "limine"
-version = "0.1.3"
-dependencies = [
- "limine-proc",
-]
-
-[[package]]
 name = "limine-proc"
 version = "0.1.0"
 dependencies = [

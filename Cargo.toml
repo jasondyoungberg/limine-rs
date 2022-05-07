@@ -10,4 +10,9 @@ repository = "https://github.com/limine-bootloader/limine-rs"
 readme = "README.md"
 categories = ["no-std"]
 
+[features]
+requests-section = ["limine-proc"]
+default = []
+
 [dependencies]
+limine-proc = { path = "limine-proc", optional = true }

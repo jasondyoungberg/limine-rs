@@ -6,6 +6,9 @@
 #![no_std]
 #![feature(const_nonnull_new)]
 
+#[cfg(feature = "requests-section")]
+pub use limine_proc::*;
+
 use core::cell::UnsafeCell;
 use core::fmt::Debug;
 use core::ptr::NonNull;
