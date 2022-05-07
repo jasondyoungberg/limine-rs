@@ -11,7 +11,7 @@ dependencies = [
 
 [[package]]
 name = "limine"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "limine-proc",
 ]
@@ -19,6 +19,8 @@ dependencies = [
 [[package]]
 name = "limine-proc"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1044abd8ac7bd1002d5c1e045314dd7d1c31896442f4b9270fd56aa234b0de81"
 dependencies = [
  "quote",
  "syn",
