@@ -490,7 +490,7 @@ pub struct LimineKernelFileResponse {
 }
 
 make_struct!(
-    struct LimineKernelFileRequest: [0xad97e90e83f1ed67, 0x31eb5d1c5ff23b69] => LimineEntryPointResponse {};
+    struct LimineKernelFileRequest: [0xad97e90e83f1ed67, 0x31eb5d1c5ff23b69] => LimineKernelFileResponse {};
 );
 
 // module request tag:
