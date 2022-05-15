@@ -1,3 +1,6 @@
+# 0.1.5
+* Fix the `LimineKernelFileRequest` request tag returning the wrong response ([#2](https://github.com/limine-bootloader/limine-rs/pull/2)).
+
 # 0.1.4
 * Adds an optional feature (`requests-section`) which brings in the `#[limine_tag]` macro. This macro is used to
   insert the limine request in the `.limine_reqs` section. Checkout the Limine Specification's Limine Requests 
