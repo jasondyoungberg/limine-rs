@@ -1,3 +1,6 @@
+# 0.1.6
+* The `LimineFramebuffer`, `LimineTerminal` structures are updated to their new layout (`spec v3.5`).
+
 # 0.1.5
 * Fix the `LimineKernelFileRequest` request tag returning the wrong response ([#2](https://github.com/limine-bootloader/limine-rs/pull/2)).
 

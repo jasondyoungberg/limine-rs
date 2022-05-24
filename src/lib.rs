@@ -232,9 +232,9 @@ make_struct!(
 #[derive(Debug)]
 pub struct LimineFramebuffer {
     pub address: LiminePtr<u8>,
-    pub width: u16,
-    pub height: u16,
-    pub pitch: u16,
+    pub width: u64,
+    pub height: u64,
+    pub pitch: u64,
     pub bpp: u16,
     pub memory_model: u8,
     pub red_mask_size: u8,
@@ -243,7 +243,7 @@ pub struct LimineFramebuffer {
     pub green_mask_shift: u8,
     pub blue_mask_size: u8,
     pub blue_mask_shift: u8,
-    pub unused: u8,
+    pub reserved: [u8; 7],
     pub edid_size: u64,
     pub edid: LiminePtr<u8>,
 }
@@ -270,7 +270,7 @@ impl LimineFramebufferResponse {
 }
 
 make_struct!(
-    struct LimineFramebufferRequest: [0xcbfe81d7dd2d1977, 0x063150319ebc9b71] => LimineFramebufferResponse {};
+    struct LimineFramebufferRequest: [0x9d5827dcd881dd75, 0xa3148604f6fab11b] => LimineFramebufferResponse {};
 );
 
 // terminal request tag:
@@ -278,9 +278,9 @@ make_struct!(
 #[derive(Debug)]
 pub struct LimineTerminal {
     /// Number of rows provided by the terminal.
-    pub rows: u32,
+    pub rows: u64,
     /// Number of columns provided by the terminal.
-    pub cols: u32,
+    pub cols: u64,
     /// The framebuffer associated with this terminal.
     pub framebuffer: LiminePtr<LimineFramebuffer>,
 }
@@ -326,7 +326,7 @@ impl LimineTerminalResponse {
 
 make_struct!(
     /// Omitting this request will cause the bootloader to not initialise the terminal service.
-    struct LimineTerminalRequest: [0x0785a0aea5d0750f, 0x1c1936fee0d6cf6e] => LimineTerminalResponse {
+    struct LimineTerminalRequest: [0xc8ac59310c2b0844, 0xa68d0c7265d38878] => LimineTerminalResponse {
         callback: LiminePtr<()> = LiminePtr::DEFAULT
     };
 );
