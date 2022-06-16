@@ -12,7 +12,9 @@ categories = ["no-std"]
 
 [features]
 requests-section = ["limine-proc"]
+into-uuid = ["uuid"]
 default = []
 
 [dependencies]
 limine-proc = { optional = true, version = "0.1.0" }
+uuid = { optional = true, version = "1.1.2" }

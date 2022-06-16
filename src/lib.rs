@@ -153,6 +153,21 @@ pub struct LimineUuid {
     pub d: [u8; 8],
 }
 
+#[cfg(feature = "into-uuid")]
+impl From<LimineUuid> for uuid::Uuid {
+    fn from(lim: LimineUuid) -> Self {
+        Self::from_fields(lim.a, lim.b, lim.c, &lim.d)
+    }
+}
+
+#[cfg(feature = "into-uuid")]
+impl From<uuid::Uuid> for LimineUuid {
+    fn from(uuid: uuid::Uuid) -> Self {
+        let (a, b, c, d) = uuid.as_fields();
+        Self { a, b, c, d: d.clone() }
+    }
+}
+
 #[derive(Debug)]
 pub struct LimineFile {
     /// Revision of this structure.
