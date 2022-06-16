@@ -17,4 +17,4 @@ default = []
 
 [dependencies]
 limine-proc = { optional = true, version = "0.1.0" }
-uuid = { optional = true, version = "1.1.2" }
+uuid = { optional = true, version = "1.1.2", default-features = false }
