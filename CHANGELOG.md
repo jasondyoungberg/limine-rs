@@ -1,5 +1,8 @@
-# 0.1.7
+# 0.1.8
 * Introduce the `into-uuid` feature which pulls in the `uuid` crate and implements conversion methods between `LimineUuid` and `uuid::Uuid` ([#3](https://github.com/limine-bootloader/limine-rs/pull/3)).
+
+# 0.1.7
+Yanked :boom:
 
 # 0.1.6
 * The `LimineFramebuffer`, `LimineTerminal` structures are updated to their new layout (`spec v3.5`).
