@@ -18,9 +18,9 @@ use core::ptr::NonNull;
 pub struct LimineEntryPoint(*const ());
 
 #[repr(transparent)]
-pub struct LiminePtr<T: Debug>(Option<NonNull<T>>);
+pub struct LiminePtr<T>(Option<NonNull<T>>);
 
-impl<T: Debug> LiminePtr<T> {
+impl<T> LiminePtr<T> {
     const DEFAULT: LiminePtr<T> = Self(None);
 
     #[inline]
@@ -85,7 +85,7 @@ impl<T: 'static + Debug> Debug for LiminePtr<T> {
 }
 
 // maker trait implementations for limine ptr
-unsafe impl<T: Debug> Sync for LiminePtr<T> {}
+unsafe impl<T: Sync> Sync for LiminePtr<T> {}
 
 /// Used to create the limine request struct.
 macro_rules! make_struct {
@@ -145,7 +145,7 @@ macro_rules! make_struct {
 
 // misc structures:
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct LimineUuid {
     pub a: u32,
     pub b: u16,
