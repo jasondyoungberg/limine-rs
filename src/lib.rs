@@ -4,6 +4,7 @@
 //! * [Limine Boot Protocol Specification](https://github.com/limine-bootloader/limine/blob/trunk/PROTOCOL.md)
 
 #![no_std]
+#![feature(const_fn_fn_ptr_basics)]
 #![feature(const_nonnull_new)]
 
 #[cfg(feature = "requests-section")]
