@@ -475,6 +475,15 @@ impl LimineMemmapResponse {
             ))
         })?
     }
+
+    pub fn mmap_mut(&self) -> Option<&'static mut [LimineMemmapEntry]> {
+        self.entries.get().map(|entry| unsafe {
+            Some(core::slice::from_raw_parts_mut(
+                entry.as_mut_ptr()?,
+                self.entry_count as usize,
+            ))
+        })?
+    }
 }
 
 make_struct!(
