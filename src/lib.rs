@@ -37,6 +37,11 @@ impl<T> LiminePtr<T> {
     pub fn get(&self) -> Option<&'static T> {
         Some(unsafe { self.0?.as_ref() })
     }
+
+    #[inline]
+    pub fn get_mut(&self) -> Option<&'static mut T> {
+        Some(unsafe { self.0?.as_mut() })
+    }
 }
 
 impl LiminePtr<char> {
@@ -476,7 +481,7 @@ impl LimineMemmapResponse {
         })?
     }
 
-    pub fn mmap_mut(&self) -> Option<&'static mut [LimineMemmapEntry]> {
+    pub fn mmap_mut(&mut self) -> Option<&'static mut [LimineMemmapEntry]> {
         self.entries.get().map(|entry| unsafe {
             Some(core::slice::from_raw_parts_mut(
                 entry.as_mut_ptr()?,
