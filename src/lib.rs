@@ -11,6 +11,7 @@ pub use limine_proc::*;
 
 use core::cell::UnsafeCell;
 use core::fmt::Debug;
+use core::marker::PhantomData;
 use core::ptr::NonNull;
 
 #[derive(Debug)]
@@ -18,29 +19,32 @@ use core::ptr::NonNull;
 pub struct LimineEntryPoint(*const ());
 
 #[repr(transparent)]
-pub struct LiminePtr<T>(Option<NonNull<T>>);
+pub struct LiminePtr<T> {
+    ptr: Option<NonNull<T>>,
+    // This marker does not affect the variance but is required for
+    // dropck to undestand that we logically own a `T`.
+    //
+    // TODO: Use `Unique<T>` when stabalized!
+    _phantom: PhantomData<T>,
+}
 
 impl<T> LiminePtr<T> {
-    const DEFAULT: LiminePtr<T> = Self(None);
+    const DEFAULT: LiminePtr<T> = Self {
+        ptr: None,
+        _phantom: PhantomData,
+    };
 
     #[inline]
-    pub fn as_mut_ptr(&self) -> Option<*mut T> {
-        Some(self.0?.as_ptr())
+    pub fn as_ptr(&self) -> Option<*mut T> {
+        Some(self.ptr?.as_ptr())
     }
 
+    /// # Safety
+    ///
+    /// The pointer is internally stored in a [`NonNull`] so, safety rules for [`NonNull::as_ref`] apply here.
     #[inline]
-    pub fn as_ptr(&self) -> Option<*const T> {
-        self.as_mut_ptr().map(|e| e as _)
-    }
-
-    #[inline]
-    pub fn get(&self) -> Option<&'static T> {
-        Some(unsafe { self.0?.as_ref() })
-    }
-
-    #[inline]
-    pub fn get_mut(&self) -> Option<&'static mut T> {
-        Some(unsafe { self.0?.as_mut() })
+    pub unsafe fn get(&self) -> Option<&'static T> {
+        self.ptr.map(|e| e.as_ref())
     }
 }
 
@@ -77,14 +81,17 @@ impl LiminePtr<char> {
 impl LiminePtr<LimineEntryPoint> {
     #[inline]
     pub const fn new(entry_point: fn() -> !) -> Self {
-        Self(NonNull::new(entry_point as *mut _))
+        Self {
+            ptr: NonNull::new(entry_point as *mut _),
+            _phantom: PhantomData,
+        }
     }
 }
 
 impl<T: 'static + Debug> Debug for LiminePtr<T> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_tuple("LiminePtr")
-            .field(&format_args!("{:#x?}", self.get()))
+            .field(&format_args!("{:#x?}", unsafe { self.get() }))
             .finish()
     }
 }
@@ -169,7 +176,12 @@ impl From<LimineUuid> for uuid::Uuid {
 impl From<uuid::Uuid> for LimineUuid {
     fn from(uuid: uuid::Uuid) -> Self {
         let (a, b, c, d) = uuid.as_fields();
-        Self { a, b, c, d: d.clone() }
+        Self {
+            a,
+            b,
+            c,
+            d: d.clone(),
+        }
     }
 }
 
@@ -280,7 +292,7 @@ pub struct LimineFramebufferResponse {
 
 impl LimineFramebufferResponse {
     pub fn framebuffers(&self) -> Option<&'static [LimineFramebuffer]> {
-        self.framebuffers.get().map(|entry| unsafe {
+        unsafe { self.framebuffers.get() }.map(|entry| unsafe {
             Some(core::slice::from_raw_parts(
                 entry.as_ptr()?,
                 self.framebuffer_count as usize,
@@ -327,7 +339,7 @@ pub struct LimineTerminalResponse {
 
 impl LimineTerminalResponse {
     pub fn terminals(&self) -> Option<&'static [LimineTerminal]> {
-        self.terminals.get().map(|entry| unsafe {
+        unsafe { self.terminals.get() }.map(|entry| unsafe {
             Some(core::slice::from_raw_parts(
                 entry.as_ptr()?,
                 self.terminal_count as usize,
@@ -413,9 +425,9 @@ impl LimineSmpResponse {
     /// `extern "C" fn(&'static LimineSmpInfo) -> !`, this also means that once written this
     /// struct must not be mutated any further.
     pub fn cpus(&mut self) -> Option<&'static mut [LimineSmpInfo]> {
-        self.cpus.get().map(|entry| unsafe {
+        unsafe { self.cpus.get() }.map(|entry| unsafe {
             Some(core::slice::from_raw_parts_mut(
-                entry.as_mut_ptr()?,
+                entry.as_ptr()?,
                 self.cpu_count as usize,
             ))
         })?
@@ -473,7 +485,7 @@ pub struct LimineMemmapResponse {
 
 impl LimineMemmapResponse {
     pub fn mmap(&self) -> Option<&'static [LimineMemmapEntry]> {
-        self.entries.get().map(|entry| unsafe {
+        unsafe { self.entries.get() }.map(|entry| unsafe {
             Some(core::slice::from_raw_parts(
                 entry.as_ptr()?,
                 self.entry_count as usize,
@@ -482,9 +494,9 @@ impl LimineMemmapResponse {
     }
 
     pub fn mmap_mut(&mut self) -> Option<&'static mut [LimineMemmapEntry]> {
-        self.entries.get().map(|entry| unsafe {
+        unsafe { self.entries.get() }.map(|entry| unsafe {
             Some(core::slice::from_raw_parts_mut(
-                entry.as_mut_ptr()?,
+                entry.as_ptr()?,
                 self.entry_count as usize,
             ))
         })?
@@ -535,7 +547,7 @@ pub struct LimineModuleResponse {
 
 impl LimineModuleResponse {
     pub fn modules(&self) -> Option<&'static [LimineFile]> {
-        self.modules.get().map(|entry| unsafe {
+        unsafe { self.modules.get() }.map(|entry| unsafe {
             Some(core::slice::from_raw_parts(
                 entry.as_ptr()?,
                 self.module_count as usize,
