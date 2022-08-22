@@ -10,6 +10,7 @@
 pub use limine_proc::*;
 
 use core::cell::UnsafeCell;
+use core::ffi::{c_char, CStr};
 use core::fmt::Debug;
 use core::marker::PhantomData;
 use core::ptr::NonNull;
@@ -48,33 +49,16 @@ impl<T> LiminePtr<T> {
     }
 }
 
-impl LiminePtr<char> {
+impl LiminePtr<c_char> {
     /// Converts the limine string pointer into a rust string.
-    pub fn to_string(&self) -> Option<&'static str> {
-        let mut ptr = self.as_ptr()? as *const u8;
-        let ptr_copy = ptr;
-
-        // 1. Calculate the length of the string.
-        let mut str_len = 0;
-
-        // SAFTEY: We stop at the first null byte.
-        unsafe {
-            while *ptr != 0 {
-                ptr = ptr.offset(1);
-                str_len += 1;
-            }
-        }
-
-        // 2. Convert the string pointer to a rust slice.
-        //
-        // SAFETY: We know that the string is null terminated and that the length
-        // is calculated correctly.
-        let slice = unsafe { core::slice::from_raw_parts(ptr_copy, str_len) };
-
-        // 3. Convert the slice to a rust string.
-        //
-        // SAFETY: Limine strings are ensured to have valid UTF-8.
-        unsafe { Some(core::str::from_utf8_unchecked(slice)) }
+    ///
+    /// ## Safety
+    /// The caller must ensure that the pointer points to a valid C
+    /// string with a NULL terminator of size less than `isize::MAX`, whose
+    /// content remain valid and doesn't change for the lifetime of the
+    /// returned `CStr`.
+    pub unsafe fn to_str(&self) -> Option<&CStr> {
+        Some(CStr::from_ptr(self.as_ptr()?))
     }
 }
 
@@ -91,6 +75,7 @@ impl LiminePtr<LimineEntryPoint> {
 impl<T: 'static + Debug> Debug for LiminePtr<T> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_tuple("LiminePtr")
+            // SAFETY: We have a non-null, shared reference to the data!
             .field(&format_args!("{:#x?}", unsafe { self.get() }))
             .finish()
     }
@@ -194,9 +179,9 @@ pub struct LimineFile {
     /// The size of the file.
     pub length: u64,
     /// The path of the file within the volume, with a leading slash.
-    pub path: LiminePtr<char>,
+    pub path: LiminePtr<c_char>,
     /// A command line associated with the file.
-    pub cmdline: LiminePtr<char>,
+    pub cmdline: LiminePtr<c_char>,
     /// Type of media file resides on.
     pub media_type: u64,
     pub unused: u32,
@@ -223,9 +208,9 @@ pub struct LimineFile {
 pub struct LimineBootInfoResponse {
     pub revision: u64,
     /// Null-terminated string containing the name of the bootloader.
-    pub name: LiminePtr<char>,
+    pub name: LiminePtr<c_char>,
     /// Null-terminated string containg the version of the bootloader.
-    pub version: LiminePtr<char>,
+    pub version: LiminePtr<c_char>,
 }
 
 make_struct!(
