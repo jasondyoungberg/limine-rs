@@ -294,10 +294,10 @@ make_struct!(
 #[repr(C)]
 #[derive(Debug)]
 pub struct LimineTerminal {
-    /// Number of rows provided by the terminal.
-    pub rows: u64,
     /// Number of columns provided by the terminal.
     pub cols: u64,
+    /// Number of rows provided by the terminal.
+    pub rows: u64,
     /// The framebuffer associated with this terminal.
     pub framebuffer: LiminePtr<LimineFramebuffer>,
 }
