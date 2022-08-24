@@ -1,6 +1,6 @@
 # builds and runs the barebones kernel in qemu
 
-set -x
+set -x -e
 
 # 1. build the kernel
 cargo build

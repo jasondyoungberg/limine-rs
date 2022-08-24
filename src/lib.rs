@@ -40,13 +40,18 @@ impl<T> LiminePtr<T> {
         Some(self.ptr?.as_ptr())
     }
 
-    /// # Safety
-    ///
-    /// The pointer is internally stored in a [`NonNull`] so, safety
-    /// rules for [`NonNull::as_ref`] apply here.
     #[inline]
-    pub unsafe fn get<'a>(&self) -> Option<&'a T> {
-        self.ptr.map(|e| e.as_ref())
+    pub fn get<'a>(&self) -> Option<&'a T> {
+        // SAFETY: According to the specication the bootloader provides
+        // a non-null and aligned pointer and there is no public API
+        // to construct a [`LiminePtr`] so, its safe to assume that the
+        // [`NonNull::as_ref`] are applied. If not, its the bootloader's
+        // fault that they have violated the specification!.
+        //
+        // Also, we have a shared reference to the data and there is no
+        // legal way to mutate it, unless through [`LiminePtr::as_ptr`]
+        // (requires pointer dereferencing which is unsafe).
+        self.ptr.map(|e| unsafe { e.as_ref() })
     }
 }
 
@@ -76,8 +81,7 @@ impl LiminePtr<LimineEntryPoint> {
 impl<T: Debug> Debug for LiminePtr<T> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_tuple("LiminePtr")
-            // SAFETY: We have a non-null, shared reference to the data!
-            .field(&format_args!("{:#x?}", unsafe { self.get() }))
+            .field(&format_args!("{:#x?}", self.get()))
             .finish()
     }
 }
@@ -278,7 +282,7 @@ pub struct LimineFramebufferResponse {
 
 impl LimineFramebufferResponse {
     pub fn framebuffers<'a>(&self) -> Option<&'a [LimineFramebuffer]> {
-        unsafe { self.framebuffers.get() }.map(|entry| unsafe {
+        self.framebuffers.get().map(|entry| unsafe {
             Some(core::slice::from_raw_parts(
                 entry.as_ptr()?,
                 self.framebuffer_count as usize,
@@ -325,7 +329,7 @@ pub struct LimineTerminalResponse {
 
 impl LimineTerminalResponse {
     pub fn terminals<'a>(&self) -> Option<&'a [LimineTerminal]> {
-        unsafe { self.terminals.get() }.map(|entry| unsafe {
+        self.terminals.get().map(|entry| unsafe {
             Some(core::slice::from_raw_parts(
                 entry.as_ptr()?,
                 self.terminal_count as usize,
@@ -411,7 +415,7 @@ impl LimineSmpResponse {
     /// `extern "C" fn(&'static LimineSmpInfo) -> !`, this also means that once written this
     /// struct must not be mutated any further.
     pub fn cpus<'a>(&mut self) -> Option<&'a mut [LimineSmpInfo]> {
-        unsafe { self.cpus.get() }.map(|entry| unsafe {
+        self.cpus.get().map(|entry| unsafe {
             Some(core::slice::from_raw_parts_mut(
                 entry.as_ptr()?,
                 self.cpu_count as usize,
@@ -471,7 +475,7 @@ pub struct LimineMemmapResponse {
 
 impl LimineMemmapResponse {
     pub fn mmap<'a>(&self) -> Option<&'a [LimineMemmapEntry]> {
-        unsafe { self.entries.get() }.map(|entry| unsafe {
+        self.entries.get().map(|entry| unsafe {
             Some(core::slice::from_raw_parts(
                 entry.as_ptr()?,
                 self.entry_count as usize,
@@ -480,7 +484,7 @@ impl LimineMemmapResponse {
     }
 
     pub fn mmap_mut<'a>(&mut self) -> Option<&'a mut [LimineMemmapEntry]> {
-        unsafe { self.entries.get() }.map(|entry| unsafe {
+        self.entries.get().map(|entry| unsafe {
             Some(core::slice::from_raw_parts_mut(
                 entry.as_ptr()?,
                 self.entry_count as usize,
@@ -533,7 +537,7 @@ pub struct LimineModuleResponse {
 
 impl LimineModuleResponse {
     pub fn modules<'a>(&self) -> Option<&'a [LimineFile]> {
-        unsafe { self.modules.get() }.map(|entry| unsafe {
+        self.modules.get().map(|entry| unsafe {
             Some(core::slice::from_raw_parts(
                 entry.as_ptr()?,
                 self.module_count as usize,

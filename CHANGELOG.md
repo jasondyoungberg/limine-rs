@@ -3,7 +3,6 @@
   the variance but changes the dropchk.
 * Add `mmap_mut` to get a mutable reference to the memory map entries; useful when allocating physical memory prior to the 
   initialisation of the PMM ([#7](https://github.com/limine-bootloader/limine-rs/pull/7)).
-* Make `LiminePtr::get` unsafe; safety rules for `NonNull::as_ref` apply.
 * Fixed terminal column count returning row count and vice versa ([#8](https://github.com/limine-bootloader/limine-rs/pull/8)).
 
 # 0.1.8
