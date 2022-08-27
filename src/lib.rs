@@ -21,7 +21,6 @@ use core::ptr::NonNull;
 pub struct LimineEntryPoint(*const ());
 
 /// [`NonNull`] with the dereference traits implemented.
-#[derive(Debug)]
 #[repr(transparent)]
 pub struct NonNullPtr<T> {
     ptr: NonNull<T>,
@@ -51,6 +50,16 @@ impl<T> DerefMut for NonNullPtr<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         // SAFETY: We have exclusive reference to the data.
         unsafe { self.ptr.as_mut() }
+    }
+}
+
+impl<T: Debug> Debug for NonNullPtr<T> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let value: &T = &*self;
+
+        f.debug_tuple("NonNullPtr")
+            .field(&format_args!("{:#x?}", value))
+            .finish()
     }
 }
 
