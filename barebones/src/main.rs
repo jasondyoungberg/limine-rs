@@ -8,7 +8,7 @@ use limine::*;
 
 static TERMINAL_REQUEST: LimineTerminalRequest = LimineTerminalRequest::new(0);
 static BOOTLOADER_INFO: LimineBootInfoRequest = LimineBootInfoRequest::new(0);
-static MMAP: LimineMmapRequest = LimineMmapRequest::new(0);
+static MMAP: LimineMemmapRequest = LimineMemmapRequest::new(0);
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
@@ -26,18 +26,16 @@ extern "C" fn x86_64_barebones_main() -> ! {
         .expect("barebones: recieved no bootloader info");
 
     println!(
-        "bootloader: (name={}, version={})",
-        bootloader_info.name.to_string().unwrap(),
-        bootloader_info.version.to_string().unwrap()
+        "bootloader: (name={:?}, version={:?})",
+        unsafe { bootloader_info.name.to_str().unwrap() },
+        unsafe { bootloader_info.version.to_str().unwrap() }
     );
 
-    let mmap_err = "barebones: recieved no mmap";
     let mmap = MMAP
         .get_response()
         .get()
-        .expect(mmap_err)
-        .mmap()
-        .expect(mmap_err);
+        .expect("barebones: recieved no mmap")
+        .memmap();
 
     println!("mmap: {:#x?}", mmap);
 
