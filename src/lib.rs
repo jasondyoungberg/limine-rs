@@ -13,11 +13,46 @@ use core::cell::UnsafeCell;
 use core::ffi::{c_char, CStr};
 use core::fmt::Debug;
 use core::marker::PhantomData;
+use core::ops::{Deref, DerefMut};
 use core::ptr::NonNull;
 
 #[derive(Debug)]
 #[repr(transparent)]
 pub struct LimineEntryPoint(*const ());
+
+/// [`NonNull`] with the dereference traits implemented.
+#[derive(Debug)]
+#[repr(transparent)]
+pub struct NonNullPtr<T> {
+    ptr: NonNull<T>,
+    // This marker does not affect the variance but is required for
+    // dropck to undestand that we logically own a `T`.
+    //
+    // TODO: Use `Unique<T>` when stabalized!
+    _phantom: PhantomData<T>,
+}
+
+impl<T> NonNullPtr<T> {
+    pub fn as_ptr(&self) -> *mut T {
+        self.ptr.as_ptr()
+    }
+}
+
+impl<T> Deref for NonNullPtr<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        // SAFETY: We have shared reference to the data.
+        unsafe { self.ptr.as_ref() }
+    }
+}
+
+impl<T> DerefMut for NonNullPtr<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        // SAFETY: We have exclusive reference to the data.
+        unsafe { self.ptr.as_mut() }
+    }
+}
 
 #[repr(transparent)]
 pub struct LiminePtr<T> {
@@ -50,8 +85,16 @@ impl<T> LiminePtr<T> {
         //
         // Also, we have a shared reference to the data and there is no
         // legal way to mutate it, unless through [`LiminePtr::as_ptr`]
-        // (requires pointer dereferencing which is unsafe).
+        // (requires pointer dereferencing which is unsafe) or [`LiminePtr::get_mut`]
+        // (requires exclusive access to the [`LiminePtr`]).
         self.ptr.map(|e| unsafe { e.as_ref() })
+    }
+
+    #[inline]
+    pub fn get_mut<'a>(&mut self) -> Option<&'a mut T> {
+        // SAFETY: Check the safety for [`LiminePtr::get`] and we have
+        // exclusive access to the data.
+        self.ptr.as_mut().map(|e| unsafe { e.as_mut() })
     }
 }
 
@@ -86,8 +129,21 @@ impl<T: Debug> Debug for LiminePtr<T> {
     }
 }
 
-// maker trait implementations for limine ptr
 unsafe impl<T: Sync> Sync for LiminePtr<T> {}
+
+type ArrayPtr<T> = NonNullPtr<NonNullPtr<T>>;
+
+impl<T> ArrayPtr<T> {
+    fn into_slice<'a>(&'a self, len: usize) -> &'a [NonNullPtr<T>] {
+        // SAFETY: We have shared reference to the array.
+        unsafe { core::slice::from_raw_parts(self.as_ptr(), len) }
+    }
+
+    fn into_slice_mut<'a>(&'a mut self, len: usize) -> &'a mut [NonNullPtr<T>] {
+        // SAFETY: We have exculusive access to the array.
+        unsafe { core::slice::from_raw_parts_mut(self.as_ptr(), len) }
+    }
+}
 
 /// Used to create the limine request struct.
 macro_rules! make_struct {
@@ -270,6 +326,13 @@ pub struct LimineFramebuffer {
     pub edid: LiminePtr<u8>,
 }
 
+impl LimineFramebuffer {
+    /// Returns the size of the framebuffer.
+    pub fn size(&self) -> usize {
+        self.pitch as usize * self.height as usize * (self.bpp as usize / 8)
+    }
+}
+
 #[repr(C)]
 #[derive(Debug)]
 pub struct LimineFramebufferResponse {
@@ -277,17 +340,13 @@ pub struct LimineFramebufferResponse {
     /// How many framebuffers are present.
     pub framebuffer_count: u64,
     /// Pointer to an array of `framebuffer_count` pointers to struct [`LimineFramebuffer`] structures.
-    pub framebuffers: LiminePtr<LiminePtr<LimineFramebuffer>>,
+    pub framebuffers: ArrayPtr<LimineFramebuffer>,
 }
 
 impl LimineFramebufferResponse {
-    pub fn framebuffers<'a>(&self) -> Option<&'a [LimineFramebuffer]> {
-        self.framebuffers.get().map(|entry| unsafe {
-            Some(core::slice::from_raw_parts(
-                entry.as_ptr()?,
-                self.framebuffer_count as usize,
-            ))
-        })?
+    pub fn framebuffers<'a>(&'a self) -> &'a [NonNullPtr<LimineFramebuffer>] {
+        self.framebuffers
+            .into_slice(self.framebuffer_count as usize)
     }
 }
 
@@ -318,7 +377,7 @@ pub struct LimineTerminalResponse {
     /// How many terminals are present.
     pub terminal_count: u64,
     /// Pointer to an array of `terminal_count` pointers to struct `limine_terminal` structures.
-    pub terminals: LiminePtr<LiminePtr<LimineTerminal>>,
+    pub terminals: ArrayPtr<LimineTerminal>,
     /// Physical pointer to the terminal `write()` function. The function is not thread-safe, nor
     /// reentrant, per-terminal. This means multiple terminals may be called simultaneously, and
     /// multiple callbacks may be handled simultaneously. The terminal parameter points to the
@@ -328,13 +387,8 @@ pub struct LimineTerminalResponse {
 }
 
 impl LimineTerminalResponse {
-    pub fn terminals<'a>(&self) -> Option<&'a [LimineTerminal]> {
-        self.terminals.get().map(|entry| unsafe {
-            Some(core::slice::from_raw_parts(
-                entry.as_ptr()?,
-                self.terminal_count as usize,
-            ))
-        })?
+    pub fn terminals<'a>(&'a self) -> &'a [NonNullPtr<LimineTerminal>] {
+        self.terminals.into_slice(self.terminal_count as usize)
     }
 
     pub fn write(&self) -> Option<impl Fn(&LimineTerminal, &str)> {
@@ -398,7 +452,7 @@ pub struct LimineSmpResponse {
     pub cpu_count: u64,
     /// Pointer to an array of `cpu_count` pointers to struct [`LimineSmpInfo`]
     /// structures.
-    pub cpus: LiminePtr<LiminePtr<LimineSmpInfo>>,
+    pub cpus: ArrayPtr<LimineSmpInfo>,
 }
 
 impl LimineSmpResponse {
@@ -414,13 +468,8 @@ impl LimineSmpResponse {
     /// - The address pointed by [`LimineSmpInfo::goto_address`] must be that of a
     /// `extern "C" fn(&'static LimineSmpInfo) -> !`, this also means that once written this
     /// struct must not be mutated any further.
-    pub fn cpus<'a>(&mut self) -> Option<&'a mut [LimineSmpInfo]> {
-        self.cpus.get().map(|entry| unsafe {
-            Some(core::slice::from_raw_parts_mut(
-                entry.as_ptr()?,
-                self.cpu_count as usize,
-            ))
-        })?
+    pub fn cpus<'a>(&'a mut self) -> &'a mut [NonNullPtr<LimineSmpInfo>] {
+        self.cpus.into_slice_mut(self.cpu_count as usize)
     }
 }
 
@@ -470,31 +519,21 @@ pub struct LimineMemmapResponse {
     /// How many memory map entries are present.
     pub entry_count: u64,
     /// Pointer to an array of `entry_count` pointers to struct [`LimineMemmapEntry`] structures.
-    pub entries: LiminePtr<LiminePtr<LimineMemmapEntry>>,
+    pub entries: ArrayPtr<LimineMemmapEntry>,
 }
 
 impl LimineMemmapResponse {
-    pub fn mmap<'a>(&self) -> Option<&'a [LimineMemmapEntry]> {
-        self.entries.get().map(|entry| unsafe {
-            Some(core::slice::from_raw_parts(
-                entry.as_ptr()?,
-                self.entry_count as usize,
-            ))
-        })?
+    pub fn memmap<'a>(&'a self) -> &'a [NonNullPtr<LimineMemmapEntry>] {
+        self.entries.into_slice(self.entry_count as usize)
     }
 
-    pub fn mmap_mut<'a>(&mut self) -> Option<&'a mut [LimineMemmapEntry]> {
-        self.entries.get().map(|entry| unsafe {
-            Some(core::slice::from_raw_parts_mut(
-                entry.as_ptr()?,
-                self.entry_count as usize,
-            ))
-        })?
+    pub fn memmap_mut<'a>(&'a mut self) -> &'a mut [NonNullPtr<LimineMemmapEntry>] {
+        self.entries.into_slice_mut(self.entry_count as usize)
     }
 }
 
 make_struct!(
-    struct LimineMmapRequest: [0x67cf3d9d378a806f, 0xe304acdfc50c3c62] => LimineMemmapResponse {};
+    struct LimineMemmapRequest: [0x67cf3d9d378a806f, 0xe304acdfc50c3c62] => LimineMemmapResponse {};
 );
 
 // entry point request tag:
@@ -532,17 +571,12 @@ pub struct LimineModuleResponse {
     /// How many modules are present.
     pub module_count: u64,
     /// Pointer to an array of `module_count` pointers to struct [`LimineFile`] structures
-    pub modules: LiminePtr<LiminePtr<LimineFile>>,
+    pub modules: ArrayPtr<LimineFile>,
 }
 
 impl LimineModuleResponse {
-    pub fn modules<'a>(&self) -> Option<&'a [LimineFile]> {
-        self.modules.get().map(|entry| unsafe {
-            Some(core::slice::from_raw_parts(
-                entry.as_ptr()?,
-                self.module_count as usize,
-            ))
-        })?
+    pub fn modules<'a>(&'a self) -> &'a [NonNullPtr<LimineFile>] {
+        self.modules.into_slice(self.module_count as usize)
     }
 }
 
