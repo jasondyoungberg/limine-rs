@@ -87,10 +87,10 @@ impl<T> LiminePtr<T> {
     #[inline]
     pub fn get<'a>(&self) -> Option<&'a T> {
         // SAFETY: According to the specication the bootloader provides
-        // a non-null and aligned pointer and there is no public API
-        // to construct a [`LiminePtr`] so, its safe to assume that the
-        // [`NonNull::as_ref`] are applied. If not, its the bootloader's
-        // fault that they have violated the specification!.
+        // a aligned pointer and there is no public API to construct a [`LiminePtr`]
+        // so, its safe to assume that the [`NonNull::as_ref`] are applied. If not,
+        // its the bootloader's fault that they have violated the
+        // specification!.
         //
         // Also, we have a shared reference to the data and there is no
         // legal way to mutate it, unless through [`LiminePtr::as_ptr`]
@@ -109,14 +109,13 @@ impl<T> LiminePtr<T> {
 
 impl LiminePtr<c_char> {
     /// Converts the limine string pointer into a rust string.
-    ///
-    /// ## Safety
-    /// The caller must ensure that the pointer points to a valid C
-    /// string with a NULL terminator of size less than `isize::MAX`, whose
-    /// content remain valid and doesn't change for the lifetime of the
-    /// returned `CStr`.
-    pub unsafe fn to_str(&self) -> Option<&CStr> {
-        Some(CStr::from_ptr(self.as_ptr()?))
+    pub fn to_str(&self) -> Option<&CStr> {
+        // SAFETY: According to the limine specification, the pointer points
+        // to a valid C string with a NULL terminator of size less than
+        // `isize::MAX`. Also we know that the `LiminePtr` is a valid C string,
+        // because it has a `T` of `c_char`. See the [`LiminePtr::get`] for more
+        // details.
+        unsafe { Some(CStr::from_ptr(self.as_ptr()?)) }
     }
 }
 

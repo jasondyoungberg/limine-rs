@@ -27,8 +27,8 @@ extern "C" fn x86_64_barebones_main() -> ! {
 
     println!(
         "bootloader: (name={:?}, version={:?})",
-        unsafe { bootloader_info.name.to_str().unwrap() },
-        unsafe { bootloader_info.version.to_str().unwrap() }
+        bootloader_info.name.to_str().unwrap(),
+        bootloader_info.version.to_str().unwrap()
     );
 
     let mmap = MMAP
