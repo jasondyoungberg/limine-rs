@@ -443,7 +443,7 @@ pub struct LimineSmpInfo {
     /// than that, the CPU state will be the same as described for the bootstrap
     /// processor. This field is unused for the structure describing the bootstrap
     /// processor.
-    pub goto_address: u64,
+    pub goto_address: extern "C" fn(info: *const LimineSmpInfo) -> !,
     /// A free for use field.
     pub extra_argument: u64,
 }
