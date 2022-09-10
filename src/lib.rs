@@ -660,3 +660,21 @@ pub struct LimineKernelAddressResponse {
 make_struct!(
     struct LimineKernelAddressRequest: [0x71ba76863cc55f63, 0xb2644a48c516a487] => LimineKernelAddressResponse {};
 );
+
+// device tree blob request tag:
+
+/// ## Notes
+/// * Information contained in the `/chosen` node may not reflect the information
+/// given by bootloader tags, and as such the `/chosen` node properties should
+/// be ignored.
+#[repr(C)]
+#[derive(Debug)]
+pub struct LimineDtbResponse {
+    pub revision: u64,
+    /// Virtual pointer to the device tree blob.
+    pub dtb_ptr: LiminePtr<u8>,
+}
+
+make_struct!(
+    struct LimineDtbRequest: [0x71ba76863cc55f63, 0xb2644a48c516a487] => LimineDtbResponse {};
+);
