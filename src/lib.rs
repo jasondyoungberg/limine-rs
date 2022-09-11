@@ -676,5 +676,5 @@ pub struct LimineDtbResponse {
 }
 
 make_struct!(
-    struct LimineDtbRequest: [0x71ba76863cc55f63, 0xb2644a48c516a487] => LimineDtbResponse {};
+    struct LimineDtbRequest: [0xb40ddb48fb54bac7, 0x545081493f81ffb7] => LimineDtbResponse {};
 );
