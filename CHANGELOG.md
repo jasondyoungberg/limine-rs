@@ -4,6 +4,7 @@
 * Add `mmap_mut` to get a mutable reference to the memory map entries; useful when allocating physical memory prior to the 
   initialisation of the PMM ([#7](https://github.com/limine-bootloader/limine-rs/pull/7)).
 * Fixed terminal column count returning row count and vice versa ([#8](https://github.com/limine-bootloader/limine-rs/pull/8)).
+* Add the `DTB` request/response tag.
 
 # 0.1.8
 * Introduce the `into-uuid` feature which pulls in the `uuid` crate and implements conversion methods between `LimineUuid` and `uuid::Uuid` ([#3](https://github.com/limine-bootloader/limine-rs/pull/3)).
