@@ -1,43 +1,41 @@
 #![no_std]
 #![no_main]
 
-mod writer;
+mod io;
 
-use core::panic::PanicInfo;
-use limine::*;
+use limine::LimineBootInfoRequest;
 
-static TERMINAL_REQUEST: LimineTerminalRequest = LimineTerminalRequest::new(0);
 static BOOTLOADER_INFO: LimineBootInfoRequest = LimineBootInfoRequest::new(0);
-static MMAP: LimineMemmapRequest = LimineMemmapRequest::new(0);
 
-#[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    loop {}
+/// Kernel Entry Point
+///
+/// `_start` is defined in the linker script as the entry point for the ELF file.
+/// Unless the [`Entry Point`](limine::LimineEntryPointRequest) feature is requested,
+/// the bootloader will transfer control to this function.
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    println!("hello, world!");
+
+    if let Some(bootinfo) = BOOTLOADER_INFO.get_response().get() {
+        println!(
+            "booted by {} v{}",
+            bootinfo.name.to_str().unwrap().to_str().unwrap(),
+            bootinfo.version.to_str().unwrap().to_str().unwrap(),
+        );
+    }
+
+    hcf();
 }
 
-// define the kernel's entry point function
-#[no_mangle]
-extern "C" fn x86_64_barebones_main() -> ! {
-    println!("Hello, rusty world!\n");
+#[panic_handler]
+fn rust_panic(info: &core::panic::PanicInfo) -> ! {
+    println!("{}", info);
+    hcf();
+}
 
-    let bootloader_info = BOOTLOADER_INFO
-        .get_response()
-        .get()
-        .expect("barebones: recieved no bootloader info");
-
-    println!(
-        "bootloader: (name={:?}, version={:?})",
-        bootloader_info.name.to_str().unwrap(),
-        bootloader_info.version.to_str().unwrap()
-    );
-
-    let mmap = MMAP
-        .get_response()
-        .get()
-        .expect("barebones: recieved no mmap")
-        .memmap();
-
-    println!("mmap: {:#x?}", mmap);
-
-    loop {}
+/// Die, spectacularly.
+pub fn hcf() -> ! {
+    loop {
+        core::hint::spin_loop();
+    }
 }
