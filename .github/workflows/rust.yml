@@ -11,7 +11,7 @@ env:
 
 jobs:
   build:
- 
+
     runs-on: ubuntu-latest
 
     steps:
@@ -24,3 +24,35 @@ jobs:
       run: rustup --version && rustc --version
     - name: Build the limine-rs crate
       run: cargo build --verbose
+
+  barebones:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./barebones
+
+    steps:
+      - name: checkout the source
+        uses: actions/checkout@v2
+
+      - name: fetch rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          target: x86_64-unknown-none
+          components: clippy, rustfmt
+
+      - name: Rust Version
+        run: rustup --version && rustc --version
+
+      - name: check formatting
+        run: cargo fmt --check
+
+      - name: run clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Build the Barebones
+        run: cargo build
+

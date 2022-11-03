@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 limine = { path = "../" }
+spin = "0.9"
