@@ -28,6 +28,10 @@ jobs:
   barebones:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: ./barebones
+
     steps:
       - name: checkout the source
         uses: actions/checkout@v2
@@ -38,6 +42,7 @@ jobs:
           toolchain: nightly
           profile: minimal
           target: x86_64-unknown-none
+          components: clippy, rustfmt
 
       - name: Rust Version
         run: rustup --version && rustc --version
