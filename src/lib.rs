@@ -211,6 +211,7 @@ macro_rules! make_struct {
 
 // misc structures:
 
+#[repr(C)]
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct LimineUuid {
     pub a: u32,
@@ -239,6 +240,7 @@ impl From<uuid::Uuid> for LimineUuid {
     }
 }
 
+#[repr(C)]
 #[derive(Debug)]
 pub struct LimineFile {
     /// Revision of this structure.
