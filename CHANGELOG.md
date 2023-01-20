@@ -1,7 +1,10 @@
+# 0.1.10
+* **FIX**: Added missing `#[repr(C)]` to `LimineFile` and `LimineUuid`.
+
 # 0.1.9
 * **Breaking**: Adds `PhantomData<T>` in `LiminePtr<T>` to make the dropchk know that we own the `T`. This change does not effect
   the variance but changes the dropchk.
-* Add `mmap_mut` to get a mutable reference to the memory map entries; useful when allocating physical memory prior to the 
+* Add `mmap_mut` to get a mutable reference to the memory map entries; useful when allocating physical memory prior to the
   initialisation of the PMM ([#7](https://github.com/limine-bootloader/limine-rs/pull/7)).
 * Fixed terminal column count returning row count and vice versa ([#8](https://github.com/limine-bootloader/limine-rs/pull/8)).
 * Add the `DTB` request/response tag.
@@ -20,7 +23,7 @@ Yanked :boom:
 
 # 0.1.4
 * Adds an optional feature (`requests-section`) which brings in the `#[limine_tag]` macro. This macro is used to
-  insert the limine request in the `.limine_reqs` section. Checkout the Limine Specification's Limine Requests 
+  insert the limine request in the `.limine_reqs` section. Checkout the Limine Specification's Limine Requests
   Section for more information.
 
   ## Example
