@@ -63,6 +63,11 @@ impl<T: Debug> Debug for NonNullPtr<T> {
     }
 }
 
+// SAFETY: The underlying type (`T`) implements {Send, Sync} so, it is safe
+//         for NonNullPtr<T> to implement {Send, Sync}.
+unsafe impl<T: Send> Send for NonNullPtr<T> {}
+unsafe impl<T: Sync> Sync for NonNullPtr<T> {}
+
 #[repr(transparent)]
 pub struct Ptr<T> {
     ptr: Option<NonNull<T>>,
