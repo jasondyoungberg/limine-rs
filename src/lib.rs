@@ -137,9 +137,10 @@ impl<T: Debug> Debug for Ptr<T> {
     }
 }
 
-// SAFETY: The underlying type (`T`) implements Send so, it is safe
-//         for Ptr<T> to implement Send.
+// SAFETY: The underlying type (`T`) implements {Send, Sync} so, it is safe
+//         for Ptr<T> to implement {Send, Sync}.
 unsafe impl<T: Send> Send for Ptr<T> {}
+unsafe impl<T: Sync> Sync for Ptr<T> {}
 
 type ArrayPtr<T> = NonNullPtr<NonNullPtr<T>>;
 
