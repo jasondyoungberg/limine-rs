@@ -86,11 +86,11 @@ impl<T> LiminePtr<T> {
 
     #[inline]
     pub fn get<'a>(&self) -> Option<&'a T> {
-        // SAFETY: According to the specication the bootloader provides
-        // a aligned pointer and there is no public API to construct a [`LiminePtr`]
-        // so, its safe to assume that the [`NonNull::as_ref`] are applied. If not,
-        // its the bootloader's fault that they have violated the
-        // specification!.
+        // SAFETY: According to the specication the bootloader provides a aligned
+        //         pointer and there is no public API to construct a [`LiminePtr`]
+        //         so, its safe to assume that the [`NonNull::as_ref`] are applied. 
+        //         If not, its the bootloader's fault that they have violated the
+        //         specification!.
         //
         // Also, we have a shared reference to the data and there is no
         // legal way to mutate it, unless through [`LiminePtr::as_ptr`]
@@ -111,10 +111,10 @@ impl LiminePtr<c_char> {
     /// Converts the limine string pointer into a rust string.
     pub fn to_str(&self) -> Option<&CStr> {
         // SAFETY: According to the limine specification, the pointer points
-        // to a valid C string with a NULL terminator of size less than
-        // `isize::MAX`. Also we know that the `LiminePtr` is a valid C string,
-        // because it has a `T` of `c_char`. See the [`LiminePtr::get`] for more
-        // details.
+        //         to a valid C string with a NULL terminator of size less than
+        //         `isize::MAX`. Also we know that the `LiminePtr` is a valid C
+        //         string, because it has a `T` of `c_char`. See the [`LiminePtr::get`] 
+        //         for more details.
         unsafe { Some(CStr::from_ptr(self.as_ptr()?)) }
     }
 }
@@ -137,7 +137,9 @@ impl<T: Debug> Debug for LiminePtr<T> {
     }
 }
 
-unsafe impl<T: Sync> Sync for LiminePtr<T> {}
+// SAFETY: The underlying type (`T`) implements Send so, it is safe
+//         for LiminePtr<T> to implement Send.
+unsafe impl<T: Send> Send for LiminePtr<T> {}
 
 type ArrayPtr<T> = NonNullPtr<NonNullPtr<T>>;
 
@@ -168,19 +170,19 @@ macro_rules! make_struct {
             id: [u64; 4],
             revision: u64,
 
-            // NOTE: The response is required to be wrapped inside an unsafe cell, since
-            // by default the response is set to NULL and when the compiler does not see
-            // any writes to the field, it is free to assume that the response is NULL. In
-            // our situation the bootloader mutates the field and we need to ensure that
-            // the compiler does not optimize the read away.
+            // XXX: The response is required to be wrapped inside an unsafe cell, since
+            //      by default the response is set to NULL and when the compiler does not see
+            //      any writes to the field, it is free to assume that the response is NULL. In
+            //      our situation the bootloader mutates the field and we need to ensure that
+            //      the compiler does not optimize the read away.
             response: UnsafeCell<LiminePtr<$response_ty>>,
             $(pub $field_name: $field_ty),*
         }
 
         impl $name {
-            // NOTE: The request ID is composed of 4 64-bit wide unsigned integers but the first
-            // two remain constant. This is refered as `LIMINE_COMMON_MAGIC` in the limine protocol
-            // header.
+            // XXX: The request ID is composed of 4 64-bit wide unsigned integers but the first
+            //      two remain constant. This is refered as `LIMINE_COMMON_MAGIC` in the limine protocol
+            //      header.
             pub const ID: [u64; 4] = [0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, $id1, $id2];
 
             pub const fn new(revision: u64) -> Self {
