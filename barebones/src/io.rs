@@ -1,11 +1,11 @@
 use core::fmt;
-use limine::LimineTerminalRequest;
+use limine::{TerminalRequest, TerminalResponse};
 use spin::Mutex;
 
-static TERMINAL_REQUEST: LimineTerminalRequest = LimineTerminalRequest::new(0);
+static TERMINAL_REQUEST: TerminalRequest = TerminalRequest::new(0);
 
 struct Writer {
-    terminals: Option<&'static limine::LimineTerminalResponse>,
+    terminals: Option<&'static TerminalResponse>,
 }
 
 unsafe impl Send for Writer {}
@@ -36,8 +36,8 @@ impl fmt::Write for Writer {
 static WRITER: Mutex<Writer> = Mutex::new(Writer { terminals: None });
 
 pub fn _print(args: fmt::Arguments) {
-    // NOTE: Locking needs to happen around `print_fmt`, not `print_str`, as the former
-    // will call the latter potentially multiple times per invocation.
+    // XXX: Locking needs to happen around `print_fmt`, not `print_str`, as the former
+    //       will call the latter potentially multiple times per invocation.
     let mut writer = WRITER.lock();
     fmt::Write::write_fmt(&mut *writer, args).ok();
 }

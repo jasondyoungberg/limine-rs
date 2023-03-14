@@ -3,14 +3,14 @@
 
 mod io;
 
-use limine::LimineBootInfoRequest;
+use limine::BootInfoRequest;
 
-static BOOTLOADER_INFO: LimineBootInfoRequest = LimineBootInfoRequest::new(0);
+static BOOTLOADER_INFO: BootInfoRequest = BootInfoRequest::new(0);
 
 /// Kernel Entry Point
 ///
 /// `_start` is defined in the linker script as the entry point for the ELF file.
-/// Unless the [`Entry Point`](limine::LimineEntryPointRequest) feature is requested,
+/// Unless the [`Entry Point`](limine::EntryPointRequest) feature is requested,
 /// the bootloader will transfer control to this function.
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
