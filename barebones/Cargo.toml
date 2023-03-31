@@ -1,8 +1,0 @@
-[package]
-name = "barebones"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-limine = { path = "../" }
-spin = "0.9"
