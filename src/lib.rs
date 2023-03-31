@@ -5,6 +5,7 @@
 
 #![no_std]
 #![feature(const_nonnull_new)]
+#![allow(deprecated)]
 
 #[cfg(feature = "requests-section")]
 pub use limine_proc::*;
@@ -375,6 +376,7 @@ make_struct!(
 // terminal request tag:
 #[repr(C)]
 #[derive(Debug)]
+#[deprecated(note = "This feature is deprecated, do not use if possible.")]
 pub struct Terminal {
     /// Number of columns provided by the terminal.
     pub cols: u64,
@@ -384,11 +386,13 @@ pub struct Terminal {
     pub framebuffer: Ptr<Framebuffer>,
 }
 
+#[deprecated(note = "This feature is deprecated, do not use if possible.")]
 type TerminalWrite =
     Option<unsafe extern "C" fn(terminal: *const Terminal, string: *const u8, length: u64)>;
 
 #[repr(C)]
 #[derive(Debug)]
+#[deprecated(note = "This feature is deprecated, do not use if possible.")]
 pub struct TerminalResponse {
     pub revision: u64,
 
@@ -404,6 +408,7 @@ pub struct TerminalResponse {
     write_fn: TerminalWrite,
 }
 
+#[deprecated(note = "This feature is deprecated, do not use if possible.")]
 impl TerminalResponse {
     pub fn terminals<'a>(&'a self) -> &'a [NonNullPtr<Terminal>] {
         self.terminals.into_slice(self.terminal_count as usize)
@@ -420,6 +425,7 @@ impl TerminalResponse {
 
 make_struct!(
     /// Omitting this request will cause the bootloader to not initialise the terminal service.
+    #[deprecated(note = "This feature is deprecated, do not use if possible.")]
     struct TerminalRequest: [0xc8ac59310c2b0844, 0xa68d0c7265d38878] => TerminalResponse {
         callback: Ptr<()> = Ptr::DEFAULT
     };
