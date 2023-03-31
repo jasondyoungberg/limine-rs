@@ -12,14 +12,9 @@ Rust crate for parsing the limine boot protocol structures.
 * [Limine Boot Protocol Specification](https://github.com/limine-bootloader/limine/blob/trunk/PROTOCOL.md)
 
 ## Barebones
-The project provides an example kernel which can be found in the `barebones` directory; to show you
-how to set up a simple 64-bit **long mode**, **higher half** rust kernel using Limine.
+An example project utilizing the crate can be found [here](https://github.com/limine-bootloader/limine-rust-barebones).
 
-The kernel ships with a shell script (`.cargo/runner.sh`) which can be invoked by executing
-`cargo run` in the barebones directory. This script will package the built kernel executable into
-an ISO image with the bootloader and run it with QEMU.
-
-**Note**: In order to compile and run the barebones kernel, **nightly** rust is required.
+**Note**: In order to compile and run the barebones kernel, **nightly** Rust is required.
 
 ## License
 
