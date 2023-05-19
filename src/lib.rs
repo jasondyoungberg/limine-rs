@@ -187,19 +187,21 @@ macro_rules! make_struct {
         }
 
         impl $name {
-            // XXX: The request ID is composed of 4 64-bit wide unsigned integers but the first
-            //      two remain constant. This is refered as `_COMMON_MAGIC` in the  protocol
-            //      header.
-            pub const ID: [u64; 4] = [0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, $id1, $id2];
-
             pub const fn new(revision: u64) -> Self {
                 Self {
-                    id: Self::ID,
+                    // The request ID is composed of 4 64-bit wide unsigned integers but the first
+                    // two remain constant. This is refered as `_COMMON_MAGIC` in the  protocol
+                    // header.
+                    id: [0xc7b1dd30df4c8b88, 0x0a82e883a194f07b, $id1, $id2],
                     revision,
 
                     response: UnsafeCell::new(Ptr::DEFAULT),
                     $($field_name: $field_default),*
                 }
+            }
+
+            pub fn id(&self) -> [u64; 4] {
+                self.id
             }
 
             pub fn get_response(&self) -> Ptr<$response_ty> {
