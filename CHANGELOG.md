@@ -1,3 +1,9 @@
+# 0.1.11
+* Drop the `Limine*` structure prefix.
+* Warn about the deperecation of the `LimineTerminal` feature.
+* Fix request ID conflicts in a static library.
+* Add tags for the new `PagingMode` feature (in favour of this, the older `Level5Paging` feature has been deprecated).
+
 # 0.1.10
 * **FIX**: Added missing `#[repr(C)]` to `LimineFile` and `LimineUuid`.
 
