@@ -94,7 +94,7 @@ impl<T> Ptr<T> {
     pub fn get<'a>(&self) -> Option<&'a T> {
         // SAFETY: According to the specication the bootloader provides a aligned
         //         pointer and there is no public API to construct a [`Ptr`]
-        //         so, its safe to assume that the [`NonNull::as_ref`] are applied. 
+        //         so, its safe to assume that the [`NonNull::as_ref`] are applied.
         //         If not, its the bootloader's fault that they have violated the
         //         specification!.
         //
@@ -119,7 +119,7 @@ impl Ptr<c_char> {
         // SAFETY: According to the  specification, the pointer points
         //         to a valid C string with a NULL terminator of size less than
         //         `isize::MAX`. Also we know that the `Ptr` is a valid C
-        //         string, because it has a `T` of `c_char`. See the [`Ptr::get`] 
+        //         string, because it has a `T` of `c_char`. See the [`Ptr::get`]
         //         for more details.
         unsafe { Some(CStr::from_ptr(self.as_ptr()?)) }
     }
@@ -208,7 +208,7 @@ macro_rules! make_struct {
                 unsafe { core::ptr::read_volatile(self.response.get()) }
             }
 
-            // generate a getter method for each field:
+            // generate a setter method for each field:
             $($(#[$field_meta])* pub const fn $field_name(mut self, value: $field_ty) -> Self {
                 self.$field_name = value;
                 self
@@ -436,6 +436,7 @@ make_struct!(
 // 5-level paging request tag:
 #[repr(C)]
 #[derive(Debug)]
+#[deprecated(note = "This feature is deprecated, do not use if possible.")]
 pub struct Level5PagingResponse {
     pub revision: u64,
 }
@@ -443,7 +444,62 @@ pub struct Level5PagingResponse {
 make_struct!(
     /// The presence of this request will prompt the bootloader to turn on x86_64 5-level paging. It will not be
     /// turned on if this request is not present. If the response pointer is unchanged, 5-level paging is engaged.
+    #[deprecated(note = "This feature is deprecated, do not use if possible.")]
     struct Level5PagingRequest: [0x94469551da9b3192, 0xebe5e86db7382888] => Level5PagingResponse {};
+);
+
+#[repr(u64)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum PagingMode {
+    #[cfg(target_arch = "x86_64")]
+    Lvl4 = 0,
+    #[cfg(target_arch = "x86_64")]
+    Lvl5 = 1,
+
+    #[cfg(target_arch = "aarch64")]
+    Lvl4 = 0,
+    #[cfg(target_arch = "aarch64")]
+    Lvl5 = 1,
+
+    #[cfg(target_arch = "riscv64")]
+    Sv39 = 0,
+    #[cfg(target_arch = "riscv64")]
+    Sv48 = 1,
+    #[cfg(target_arch = "riscv64")]
+    Sv57 = 2,
+}
+
+impl PagingMode {
+    #[cfg(target_arch = "x86_64")]
+    pub const fn default() -> Self {
+        PagingMode::Lvl4
+    }
+
+    #[cfg(target_arch = "aarch64")]
+    pub const fn default() -> Self {
+        PagingMode::Lvl4
+    }
+
+    #[cfg(target_arch = "riscv64")]
+    pub const fn default() -> Self {
+        PagingMode::Sv48
+    }
+}
+
+// Paging mode request tag:
+#[repr(C)]
+#[derive(Debug)]
+pub struct PagingModeResponse {
+    pub revision: u64,
+    pub mode: PagingMode,
+    pub flags: u64,
+}
+
+make_struct!(
+    struct PagingModeRequest: [0x95c1a0edab0944cb, 0xa4e5cb3842f7488a] => PagingModeResponse {
+        mode: PagingMode = PagingMode::default(),
+        flags: u64 = 0
+    };
 );
 
 // smp request tag:
