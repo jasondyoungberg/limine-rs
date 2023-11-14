@@ -1,3 +1,6 @@
+# 0.1.12
+* Add the `BaseRevision` tag.
+
 # 0.1.11
 * Drop the `Limine*` structure prefix.
 * Warn about the deperecation of the `LimineTerminal` feature.
