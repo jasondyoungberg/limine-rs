@@ -284,6 +284,29 @@ pub struct File {
     pub part_uuid: Uuid,
 }
 
+#[repr(C)]
+#[derive(Debug)]
+pub struct BaseRevision {
+    id: [u64; 2],
+    revision: UnsafeCell<u64>,
+}
+
+impl BaseRevision {
+    pub const fn new(revision: u64) -> Self {
+        Self {
+            id: [0xf9562b2d5c95a6c8, 0x6a7b384944536bdc],
+            revision: UnsafeCell::new(revision),
+        }
+    }
+
+    pub fn is_supported(&self) -> bool {
+        let revision: u64 = unsafe { core::ptr::read_volatile(self.revision.get()) };
+        revision == 0
+    }
+}
+
+unsafe impl Sync for BaseRevision {}
+
 // boot info request tag:
 #[repr(C)]
 #[derive(Debug)]
