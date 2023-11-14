@@ -388,7 +388,7 @@ pub struct FramebufferResponse {
 }
 
 impl FramebufferResponse {
-    pub fn framebuffers<'a>(&'a self) -> &'a [NonNullPtr<Framebuffer>] {
+    pub fn framebuffers(&self) -> &[NonNullPtr<Framebuffer>] {
         self.framebuffers
             .into_slice(self.framebuffer_count as usize)
     }
@@ -435,7 +435,7 @@ pub struct TerminalResponse {
 
 #[deprecated(note = "This feature is deprecated, do not use if possible.")]
 impl TerminalResponse {
-    pub fn terminals<'a>(&'a self) -> &'a [NonNullPtr<Terminal>] {
+    pub fn terminals(&self) -> &[NonNullPtr<Terminal>] {
         self.terminals.into_slice(self.terminal_count as usize)
     }
 
@@ -573,7 +573,7 @@ impl SmpResponse {
     /// - The address pointed by [`SmpInfo::goto_address`] must be that of a
     /// `extern "C" fn(&'static SmpInfo) -> !`, this also means that once written this
     /// struct must not be mutated any further.
-    pub fn cpus<'a>(&'a mut self) -> &'a mut [NonNullPtr<SmpInfo>] {
+    pub fn cpus(&mut self) -> &mut [NonNullPtr<SmpInfo>] {
         self.cpus.into_slice_mut(self.cpu_count as usize)
     }
 }
@@ -628,11 +628,11 @@ pub struct MemmapResponse {
 }
 
 impl MemmapResponse {
-    pub fn memmap<'a>(&'a self) -> &'a [NonNullPtr<MemmapEntry>] {
+    pub fn memmap(&self) -> &[NonNullPtr<MemmapEntry>] {
         self.entries.into_slice(self.entry_count as usize)
     }
 
-    pub fn memmap_mut<'a>(&'a mut self) -> &'a mut [NonNullPtr<MemmapEntry>] {
+    pub fn memmap_mut(&mut self) -> &mut [NonNullPtr<MemmapEntry>] {
         self.entries.into_slice_mut(self.entry_count as usize)
     }
 }
@@ -680,7 +680,7 @@ pub struct ModuleResponse {
 }
 
 impl ModuleResponse {
-    pub fn modules<'a>(&'a self) -> &'a [NonNullPtr<File>] {
+    pub fn modules(&self) -> &[NonNullPtr<File>] {
         self.modules.into_slice(self.module_count as usize)
     }
 }
