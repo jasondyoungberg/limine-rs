@@ -18,7 +18,14 @@ jobs:
       with:
         profile: minimal
         toolchain: nightly
+        components: rustfmt, clippy
     - name: Rust Version
       run: rustup --version && rustc --version
     - name: Build the limine-rs crate
       run: cargo build --verbose
+    - name: Run clippy
+      run: cargo clippy --verbose --all-targets --all-features -- -D warnings
+    - name: Reformat code
+      uses: mbrobbel/rustfmt-check@master
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
