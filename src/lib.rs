@@ -17,6 +17,10 @@
 //! automatically checked by the types in this crate, and types that may not be
 //! returned are wrapped in an [`Option`].
 //!
+//! In this crate, you may specify the revisions of your requests via
+//! `with_revision`, but you likely just want to use `new`. This will use the
+//! latest revision supported by this crate.
+//!
 //! # Usage
 //! The first thing you need to do is place a [`BaseRevision`] tag somewhere in
 //! your code. This tag is used to identify what revision of the protocol your
@@ -28,7 +32,7 @@
 //! use limine::BaseRevision;
 //!
 //! // Require version 1 or higher
-//! pub static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+//! pub static BASE_REVISION: BaseRevision = BaseRevision::new();
 //! ```
 //!
 //! Next, you can place any requests you would like. For example, to request a
@@ -40,7 +44,7 @@
 //! pub const STACK_SIZE: u64 = 0x100000;
 //!
 //! // Request a larger stack
-//! pub static STACK_SIZE_REQUEST: StackSizeRequest = StackSizeRequest::new(0).with_size(STACK_SIZE);
+//! pub static STACK_SIZE_REQUEST: StackSizeRequest = StackSizeRequest::new().with_size(STACK_SIZE);
 //! ```
 
 use core::cell::UnsafeCell;
@@ -64,8 +68,13 @@ pub struct BaseRevision {
     revision: UnsafeCell<u64>,
 }
 impl BaseRevision {
+    /// Create a new base revision tag with the latest revision.
+    pub const fn new() -> Self {
+        Self::with_revision(1)
+    }
+
     /// Create a new base revision tag with the given revision.
-    pub const fn new(revision: u64) -> Self {
+    pub const fn with_revision(revision: u64) -> Self {
         Self {
             _id: [0xf9562b2d5c95a6c8, 0x6a7b384944536bdc],
             revision: UnsafeCell::new(revision),

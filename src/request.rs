@@ -2,12 +2,17 @@
 
 use core::{cell::UnsafeCell, ptr::NonNull};
 
-use crate::{modules::InternalModules, paging, response::*, smp};
+use crate::{modules::InternalModule, paging, response::*, smp};
 
 macro_rules! impl_base_fns {
-    ($response:ty, $magic:expr, { $($(#[$attr:meta])* $field:ident: $val:expr),* $(,)? }) => {
+    ($latest_revision:expr, $response:ty, $magic:expr, { $($(#[$attr:meta])* $field:ident: $val:expr),* $(,)? }) => {
+        /// Create a new request with the latest revision.
+        pub const fn new() -> Self {
+            Self::with_revision($latest_revision)
+        }
+
         /// Create a new request with the given revision.
-        pub const fn new(revision: u64) -> Self {
+        pub const fn with_revision(revision: u64) -> Self {
             Self {
                 id: $magic,
                 revision,
@@ -96,10 +101,10 @@ impl<T> Response<T> {
 /// # Usage
 /// ```rust
 /// # use limine::{request::BootloaderInfoRequest, response::BootloaderInfoResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request the bootloader info
-/// static BOOTLOADER_INFO_REQUEST: BootloaderInfoRequest = BootloaderInfoRequest::new(0);
+/// static BOOTLOADER_INFO_REQUEST: BootloaderInfoRequest = BootloaderInfoRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a BootloaderInfoResponse> {
 /// // ...later, in our code
@@ -114,6 +119,7 @@ pub struct BootloaderInfoRequest {
 }
 impl BootloaderInfoRequest {
     impl_base_fns!(
+        0,
         BootloaderInfoResponse,
         magic!(0xf55038d8e2a1202f, 0x279426fcf5f59740),
         {}
@@ -125,10 +131,10 @@ impl BootloaderInfoRequest {
 /// # Usage
 /// ```
 /// # use limine::{request::StackSizeRequest, response::StackSizeResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request a 128 KiB stack
-/// static STACK_SIZE_REQUEST: StackSizeRequest = StackSizeRequest::new(0).with_size(0x32000);
+/// static STACK_SIZE_REQUEST: StackSizeRequest = StackSizeRequest::new().with_size(0x32000);
 ///
 /// # fn dummy<'a>() -> Option<&'a StackSizeResponse> {
 /// // ...later, in our code
@@ -144,6 +150,7 @@ pub struct StackSizeRequest {
 }
 impl StackSizeRequest {
     impl_base_fns!(
+        0,
         StackSizeResponse,
         magic!(0x224ef0460a8e8926, 0xe1cb0fc25f46ea3d),
         {
@@ -170,10 +177,10 @@ impl StackSizeRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::HhdmRequest, response::HhdmResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request the higher-half direct mapping
-/// static HHDM_REQUEST: HhdmRequest = HhdmRequest::new(0);
+/// static HHDM_REQUEST: HhdmRequest = HhdmRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a HhdmResponse> {
 /// // ...later, in our code
@@ -188,6 +195,7 @@ pub struct HhdmRequest {
 }
 impl HhdmRequest {
     impl_base_fns!(
+        0,
         HhdmResponse,
         magic!(0x48dcf1cb8ad2b852, 0x63984e959a98244b),
         {}
@@ -199,10 +207,10 @@ impl HhdmRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::FramebufferRequest, response::FramebufferResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request a framebuffer
-/// static FRAMEBUFFER_REQUEST: FramebufferRequest = FramebufferRequest::new(0);
+/// static FRAMEBUFFER_REQUEST: FramebufferRequest = FramebufferRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a FramebufferResponse> {
 /// // ...later, in our code
@@ -216,6 +224,7 @@ pub struct FramebufferRequest {
 }
 impl FramebufferRequest {
     impl_base_fns!(
+        0,
         FramebufferResponse,
         magic!(0x9d5827dcd881dd75, 0xa3148604f6fab11b),
         {}
@@ -228,14 +237,14 @@ impl FramebufferRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::PagingModeRequest, response::PagingModeResponse, paging, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request a paging mode
 /// #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))] // x86_64 and AArch64 share the same modes
-/// static PAGING_MODE_REQUEST: PagingModeRequest = PagingModeRequest::new(0).with_mode(paging::Mode::FOUR_LEVEL);
+/// static PAGING_MODE_REQUEST: PagingModeRequest = PagingModeRequest::new().with_mode(paging::Mode::FOUR_LEVEL);
 ///
 /// #[cfg(target_arch = "riscv64")] // RISC-V has different modes
-/// static PAGING_MODE_REQUEST: PagingModeRequest = PagingModeRequest::new(0).with_mode(paging::Mode::SV48);
+/// static PAGING_MODE_REQUEST: PagingModeRequest = PagingModeRequest::new().with_mode(paging::Mode::SV48);
 ///
 /// # fn dummy<'a>() -> Option<&'a PagingModeResponse> {
 /// // ...later, in our code
@@ -250,6 +259,7 @@ pub struct PagingModeRequest {
 }
 impl PagingModeRequest {
     impl_base_fns!(
+        0,
         PagingModeResponse,
         magic!(0x95c1a0edab0944cb, 0xa4e5cb3842f7488a),
         {
@@ -298,10 +308,10 @@ impl PagingModeRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::FiveLevelPagingRequest, response::FiveLevelPagingResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request a five-level paging mode
-/// static FIVE_LEVEL_PAGING_REQUEST: FiveLevelPagingRequest = FiveLevelPagingRequest::new(0);
+/// static FIVE_LEVEL_PAGING_REQUEST: FiveLevelPagingRequest = FiveLevelPagingRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a FiveLevelPagingResponse> {
 /// // ...later, in our code
@@ -318,6 +328,7 @@ pub struct FiveLevelPagingRequest {
 #[allow(deprecated)]
 impl FiveLevelPagingRequest {
     impl_base_fns!(
+        0,
         FiveLevelPagingResponse,
         magic!(0x94469551da9b3192, 0xebe5e86db7382888),
         {}
@@ -330,10 +341,10 @@ impl FiveLevelPagingRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::SmpRequest, response::SmpResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request that all other cores be started
-/// static SMP_REQUEST: SmpRequest = SmpRequest::new(0);
+/// static SMP_REQUEST: SmpRequest = SmpRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a SmpResponse> {
 /// // ...later, in our code
@@ -349,6 +360,7 @@ pub struct SmpRequest {
 }
 impl SmpRequest {
     impl_base_fns!(
+        0,
         SmpResponse,
         magic!(0x95a67b819a1b857e, 0xa0b61b723b6a73e0),
         {
@@ -382,10 +394,10 @@ impl SmpRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::MemoryMapRequest, response::MemoryMapResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request a memory map
-/// static MEMORY_MAP_REQUEST: MemoryMapRequest = MemoryMapRequest::new(0);
+/// static MEMORY_MAP_REQUEST: MemoryMapRequest = MemoryMapRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a MemoryMapResponse> {
 /// // ...later, in our code
@@ -400,6 +412,7 @@ pub struct MemoryMapRequest {
 }
 impl MemoryMapRequest {
     impl_base_fns!(
+        0,
         MemoryMapResponse,
         magic!(0x67cf3d9d378a806f, 0xe304acdfc50c3c62),
         {}
@@ -417,6 +430,7 @@ pub struct EntryPointRequest {
 }
 impl EntryPointRequest {
     impl_base_fns!(
+        0,
         EntryPointResponse,
         magic!(0x13d86c035a1cd3e1, 0x2b0caa89d8f3026a),
         {
@@ -451,10 +465,10 @@ impl EntryPointRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::KernelFileRequest, response::KernelFileResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request information about the kernel file
-/// static KERNEL_FILE_REQUEST: KernelFileRequest = KernelFileRequest::new(0);
+/// static KERNEL_FILE_REQUEST: KernelFileRequest = KernelFileRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a KernelFileResponse> {
 /// // ...later, in our code
@@ -469,6 +483,7 @@ pub struct KernelFileRequest {
 }
 impl KernelFileRequest {
     impl_base_fns!(
+        0,
         KernelFileResponse,
         magic!(0xad97e90e83f1ed67, 0x31eb5d1c5ff23b69),
         {}
@@ -489,25 +504,17 @@ impl KernelFileRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::ModuleRequest, response::ModuleResponse, modules::*, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
-/// // Request information about the loaded modules
-/// static MODULE_REQUEST: ModuleRequest = ModuleRequest::new(0);
+/// // Try to load our own module
+/// static MODULE_REQUEST: ModuleRequest =
+///    ModuleRequest::new().with_internal_modules(&[
+///        &InternalModule::new().with_path(limine::cstr!("/path/to/a/module"))
+///    ]);
 ///
 /// # fn dummy<'a>() -> Option<&'a ModuleResponse> {
 /// // ...later, in our code
 /// MODULE_REQUEST.get_response() // ...
-/// # }
-///
-/// // Try to load our own module
-/// static MODULE_REQUEST_REV1: ModuleRequest =
-///    ModuleRequest::new(1).with_internal_modules(InternalModules::new(&[
-///        &InternalModule::new().with_path(limine::cstr!("/path/to/a/module"))
-///    ]));
-///
-/// # fn dummy_rev1<'a>() -> Option<&'a ModuleResponse> {
-/// // ...later, in our code
-/// MODULE_REQUEST_REV1.get_response() // ...
 /// # }
 /// ```
 #[repr(C)]
@@ -517,12 +524,16 @@ pub struct ModuleRequest {
     response: Response<ModuleResponse>,
     internal_modules: InternalModules,
 }
+unsafe impl Sync for ModuleRequest {}
+unsafe impl Send for ModuleRequest {}
 impl ModuleRequest {
     impl_base_fns!(
+        1,
         ModuleResponse,
         magic!(0x3e7e279702be32af, 0xca1c4f3bd1280cee),
         {
-            internal_modules: InternalModules::EMPTY,
+            internal_module_ct: 0,
+            internal_modules: core::ptr::null(),
         }
     );
 
@@ -545,10 +556,10 @@ impl ModuleRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::RsdpRequest, response::RsdpResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request the RSDP address
-/// static Rsdp_REQUEST: RsdpRequest = RsdpRequest::new(0);
+/// static Rsdp_REQUEST: RsdpRequest = RsdpRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a RsdpResponse> {
 /// // ...later, in our code
@@ -563,6 +574,7 @@ pub struct RsdpRequest {
 }
 impl RsdpRequest {
     impl_base_fns!(
+        0,
         RsdpResponse,
         magic!(0xc5e77b6b397e7b43, 0x27637845accdcf3c),
         {}
@@ -574,10 +586,10 @@ impl RsdpRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::SmbiosRequest, response::SmbiosResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request the SMBIOS table address
-/// static SMBIOS_REQUEST: SmbiosRequest = SmbiosRequest::new(0);
+/// static SMBIOS_REQUEST: SmbiosRequest = SmbiosRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a SmbiosResponse> {
 /// // ...later, in our code
@@ -592,6 +604,7 @@ pub struct SmbiosRequest {
 }
 impl SmbiosRequest {
     impl_base_fns!(
+        0,
         SmbiosResponse,
         magic!(0x9e9046f11e095391, 0xaa4a520fefbde5ee),
         {}
@@ -603,10 +616,10 @@ impl SmbiosRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::EfiSystemTableRequest, response::EfiSystemTableResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request the UEFI system table address
-/// static EFI_SYSTEM_TABLE_REQUEST: EfiSystemTableRequest = EfiSystemTableRequest::new(0);
+/// static EFI_SYSTEM_TABLE_REQUEST: EfiSystemTableRequest = EfiSystemTableRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a EfiSystemTableResponse> {
 /// // ...later, in our code
@@ -621,6 +634,7 @@ pub struct EfiSystemTableRequest {
 }
 impl EfiSystemTableRequest {
     impl_base_fns!(
+        0,
         EfiSystemTableResponse,
         magic!(0x5ceba5163eaaf6d6, 0x0a6981610cf65fcc),
         {}
@@ -632,10 +646,10 @@ impl EfiSystemTableRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::EfiMemoryMapRequest, response::EfiMemoryMapResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request the UEFI memory map address
-/// static EFI_MEMORY_MAP_REQUEST: EfiMemoryMapRequest = EfiMemoryMapRequest::new(0);
+/// static EFI_MEMORY_MAP_REQUEST: EfiMemoryMapRequest = EfiMemoryMapRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a EfiMemoryMapResponse> {
 /// // ...later, in our code
@@ -650,6 +664,7 @@ pub struct EfiMemoryMapRequest {
 }
 impl EfiMemoryMapRequest {
     impl_base_fns!(
+        0,
         EfiMemoryMapResponse,
         magic!(0x7df62a431d6872d5, 0xa4fcdfb3e57306c8),
         {}
@@ -661,10 +676,10 @@ impl EfiMemoryMapRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::BootTimeRequest, response::BootTimeResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request the boot time
-/// static BOOT_TIME_REQUEST: BootTimeRequest = BootTimeRequest::new(0);
+/// static BOOT_TIME_REQUEST: BootTimeRequest = BootTimeRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a BootTimeResponse> {
 /// // ...later, in our code
@@ -679,6 +694,7 @@ pub struct BootTimeRequest {
 }
 impl BootTimeRequest {
     impl_base_fns!(
+        0,
         BootTimeResponse,
         magic!(0x502746e184c088aa, 0xfbc5ec83e6327893),
         {}
@@ -690,10 +706,10 @@ impl BootTimeRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::KernelAddressRequest, response::KernelAddressResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request the kernel address
-/// static KERNEL_ADDRESS_REQUEST: KernelAddressRequest = KernelAddressRequest::new(0);
+/// static KERNEL_ADDRESS_REQUEST: KernelAddressRequest = KernelAddressRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a KernelAddressResponse> {
 /// // ...later, in our code
@@ -708,6 +724,7 @@ pub struct KernelAddressRequest {
 }
 impl KernelAddressRequest {
     impl_base_fns!(
+        0,
         KernelAddressResponse,
         magic!(0x71ba76863cc55f63, 0xb2644a48c516a487),
         {}
@@ -719,10 +736,10 @@ impl KernelAddressRequest {
 /// # Usage
 /// ```rust
 /// # use limine::{request::DeviceTreeBlobRequest, response::DeviceTreeBlobResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request the device-tree blob address
-/// static DEVICE_TREE_BLOB_REQUEST: DeviceTreeBlobRequest = DeviceTreeBlobRequest::new(0);
+/// static DEVICE_TREE_BLOB_REQUEST: DeviceTreeBlobRequest = DeviceTreeBlobRequest::new();
 ///
 /// # fn dummy<'a>() -> Option<&'a DeviceTreeBlobResponse> {
 /// // ...later, in our code
@@ -737,6 +754,7 @@ pub struct DeviceTreeBlobRequest {
 }
 impl DeviceTreeBlobRequest {
     impl_base_fns!(
+        0,
         DeviceTreeBlobResponse,
         magic!(0xb40ddb48fb54bac7, 0x545081493f81ffb7),
         {}
