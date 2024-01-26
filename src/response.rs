@@ -3,6 +3,7 @@
 use core::{
     ffi::{c_char, c_void, CStr},
     ptr::NonNull,
+    time::Duration,
 };
 
 use crate::{
@@ -371,14 +372,14 @@ impl EfiMemoryMapResponse {
 #[repr(C)]
 pub struct BootTimeResponse {
     revision: u64,
-    boot_time: u64,
+    boot_time: i64,
 }
 impl BootTimeResponse {
     impl_base_fns!();
 
     /// Returns the boot time in seconds, as read from the system RTC.
-    pub fn boot_time(&self) -> u64 {
-        self.boot_time
+    pub fn boot_time(&self) -> Duration {
+        Duration::from_secs(self.boot_time as u64)
     }
 }
 
