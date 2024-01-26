@@ -76,6 +76,7 @@ bitflags! {
     /// Flags for the [SMP request](crate::request::SmpRequest).
     #[derive(Default, Clone, Copy)]
     pub struct RequestFlags: u64 {
+        /// Initialize the X2APIC.
         #[cfg(target_arch = "x86_64")]
         const X2APIC = 1 << 0;
     }
@@ -86,6 +87,7 @@ bitflags! {
     /// Flags for the [SMP response](crate::response::SmpResponse).
     #[derive(Default, Clone, Copy)]
     pub struct ResponseFlags: u32 {
+        /// The X2APIC was initialized.
         #[cfg(target_arch = "x86_64")]
         const X2APIC = 1 << 0;
     }
