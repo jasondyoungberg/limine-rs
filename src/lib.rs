@@ -2,6 +2,46 @@
 #![deny(missing_docs)]
 
 //! Rust Bindings for the limine boot protocol.
+//!
+//! # Examples
+//! An example kernel using this crate can be found
+//! [here](https://github.com/limine-bootloader/limine-rust-barebones). For
+//! smaller usage examples, see [usage](#usage).
+//!
+//! # Revisions
+//! Many types in the limine boot protocol have associated revisions. These
+//! signify various added fields and changes to the protocol. For requests, if a
+//! bootloader doesn't support a revision, it will simply process it as if it is
+//! the highest revision it does support. The bootloader will only return the
+//! latest supported revision in responses. The response revision is
+//! automatically checked by the types in this crate, and types that may not be
+//! returned are wrapped in an [`Option`].
+//!
+//! # Usage
+//! The first thing you need to do is place a [`BaseRevision`] tag somewhere in
+//! your code. This tag is used to identify what revision of the protocol your
+//! kernel requires. Without this tag, the bootloader will assume revision 0,
+//! which is likely not what you want.
+//!
+//! The [`BaseRevision`] tag can be placed anywhere in your code, like so:
+//! ```rust
+//! use limine::BaseRevision;
+//!
+//! // Require version 1 or higher
+//! pub static BASE_REVISION: BaseRevision = BaseRevision::new(1);
+//! ```
+//!
+//! Next, you can place any requests you would like. For example, to request a
+//! larger stack (*recommended on debug Rust builds*), you can do the following:
+//! ```rust
+//! use limine::request::StackSizeRequest;
+//!
+//! // Some reasonable size
+//! pub const STACK_SIZE: u64 = 0x100000;
+//!
+//! // Request a larger stack
+//! pub static STACK_SIZE_REQUEST: StackSizeRequest = StackSizeRequest::new(0).with_size(STACK_SIZE);
+//! ```
 
 use core::cell::UnsafeCell;
 
