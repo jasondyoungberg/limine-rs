@@ -35,14 +35,14 @@ impl From<uuid::Uuid> for Uuid {
             a: uuid.as_fields().0,
             b: uuid.as_fields().1,
             c: uuid.as_fields().2,
-            d: uuid.as_fields().3,
+            d: *uuid.as_fields().3,
         }
     }
 }
 #[cfg(feature = "uuid")]
 impl From<Uuid> for uuid::Uuid {
     fn from(uuid: Uuid) -> Self {
-        Self::from_fields(uuid.a, uuid.b, uuid.c, &uuid.d).unwrap()
+        Self::from_fields(uuid.a, uuid.b, uuid.c, &uuid.d)
     }
 }
 
