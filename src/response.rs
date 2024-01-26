@@ -220,7 +220,7 @@ impl SmpResponse {
 pub struct MemoryMapResponse {
     revision: u64,
     entry_ct: u64,
-    entries: *const *const memory_map::Entry,
+    entries: *mut *mut memory_map::Entry,
 }
 unsafe impl Sync for MemoryMapResponse {}
 unsafe impl Send for MemoryMapResponse {}
@@ -229,8 +229,16 @@ impl MemoryMapResponse {
 
     /// Returns a slice of found memory map entries. See
     /// [`Entry`](memory_map::Entry) for more information.
-    pub fn entries(&self) -> &[memory_map::Entry] {
+    pub fn entries(&self) -> &[&memory_map::Entry] {
         unsafe { core::slice::from_raw_parts(self.entries.cast(), self.entry_ct as usize) }
+    }
+
+    /// Returns a mutable slice of found memory map entries. See
+    /// [`Entry`](memory_map::Entry) for more information. Note that this
+    /// function takes `&mut self`, so the response will likely need to be
+    /// wrapped in a `Mutex` or similar.
+    pub fn entries_mut(&mut self) -> &mut [&mut memory_map::Entry] {
+        unsafe { core::slice::from_raw_parts_mut(self.entries.cast(), self.entry_ct as usize) }
     }
 }
 
