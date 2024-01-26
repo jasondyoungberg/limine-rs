@@ -19,3 +19,4 @@ uuid = { version = "1", default-features = false, optional = true }
 
 [features]
 uuid = ["dep:uuid"]
+ipaddr = []

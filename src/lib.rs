@@ -8,6 +8,12 @@
 //! [here](https://github.com/limine-bootloader/limine-rust-barebones). For
 //! smaller usage examples, see [usage](#usage).
 //!
+//! # Crate features
+//! - `uuid`: Implements `Into<uuid::Uuid>` and `From<uuid::Uuid>` for [`file::Uuid`].
+//! - `ipaddr`: Enables functions in [`file::File`] to return `Ipv4Addr`. This
+//!   is feature gated because it will only appear in stable on Rust 1.77.0, on
+//!   March 21st.
+//!
 //! # Revisions
 //! Many types in the limine boot protocol have associated revisions. These
 //! signify various added fields and changes to the protocol. For requests, if a

@@ -3,9 +3,11 @@
 use core::{
     ffi::{c_char, c_void, CStr},
     mem::MaybeUninit,
-    net::{Ipv4Addr, SocketAddrV4},
     num::NonZeroU32,
 };
+
+#[cfg(feature = "ipaddr")]
+use core::net::{Ipv4Addr, SocketAddrV4};
 
 /// A UUID. With the `uuid` feature, this can be converted directly to
 /// [`uuid::Uuid`] via [`Into`], and the reverse via [`From`].
@@ -114,6 +116,7 @@ impl File {
         self.media_type
     }
 
+    #[cfg(feature = "ipaddr")]
     /// The IP address of the TFTP server, if the file was loaded from a TFTP.
     pub fn tftp_ip(&self) -> Option<Ipv4Addr> {
         self.tftp_ip.map(|v| {
@@ -121,10 +124,16 @@ impl File {
             Ipv4Addr::new(bytes[0], bytes[1], bytes[2], bytes[3])
         })
     }
+    #[cfg(not(feature = "ipaddr"))]
+    /// The IP address of the TFTP server, if the file was loaded from a TFTP.
+    pub fn tftp_ip(&self) -> Option<NonZeroU32> {
+        self.tftp_ip
+    }
     /// The port of the TFTP server, if the file was loaded from a TFTP.
     pub fn tftp_port(&self) -> Option<NonZeroU32> {
         self.tftp_port
     }
+    #[cfg(feature = "ipaddr")]
     /// The address of the TFTP server, if the file was loaded from a TFTP. This
     /// is simply a combination of [`tftp_ip`](Self::tftp_ip) and
     /// [`tftp_port`](Self::tftp_port).
