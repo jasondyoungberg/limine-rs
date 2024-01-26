@@ -194,7 +194,6 @@ impl HhdmRequest {
     );
 }
 
-#[repr(C)]
 /// Request a framebuffer for graphics output.
 ///
 /// # Usage
@@ -209,6 +208,7 @@ impl HhdmRequest {
 /// // ...later, in our code
 /// FRAMEBUFFER_REQUEST.get_response() // ...
 /// # }
+#[repr(C)]
 pub struct FramebufferRequest {
     id: [u64; 4],
     revision: u64,

@@ -114,9 +114,9 @@ impl InternalModule {
     }
 }
 
-#[repr(C)]
 /// A list of internal modules, usable with [module
 /// request](crate::request::ModuleRequest) revision 1 or greater.
+#[repr(C)]
 pub struct InternalModules {
     #[doc(hidden)]
     pub count: u64,
