@@ -544,15 +544,15 @@ impl ModuleRequest {
 ///
 /// # Usage
 /// ```rust
-/// # use limine::{request::RdspRequest, response::RdspResponse, BaseRevision};
+/// # use limine::{request::RsdpRequest, response::RsdpResponse, BaseRevision};
 /// static BASE_REVISION: BaseRevision = BaseRevision::new(1);
 ///
 /// // Request the RSDP address
-/// static RDSP_REQUEST: RdspRequest = RdspRequest::new(0);
+/// static Rsdp_REQUEST: RsdpRequest = RsdpRequest::new(0);
 ///
-/// # fn dummy<'a>() -> Option<&'a RdspResponse> {
+/// # fn dummy<'a>() -> Option<&'a RsdpResponse> {
 /// // ...later, in our code
-/// RDSP_REQUEST.get_response() // ...
+/// Rsdp_REQUEST.get_response() // ...
 /// # }
 /// ```
 #[repr(C)]
