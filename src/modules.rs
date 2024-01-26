@@ -1,9 +1,6 @@
 //! Auxiliary types for the [module request](crate::request::ModuleRequest)
 
-use core::{
-    ffi::{c_char, CStr},
-    ops::Deref,
-};
+use core::ffi::{c_char, CStr};
 
 use bitflags::bitflags;
 
@@ -111,42 +108,5 @@ impl InternalModule {
     /// Returns the module's flags.
     pub fn flags(&self) -> ModuleFlags {
         self.flags
-    }
-}
-
-/// A list of internal modules, usable with [module
-/// request](crate::request::ModuleRequest) revision 1 or greater.
-#[repr(C)]
-pub struct InternalModules {
-    #[doc(hidden)]
-    pub count: u64,
-    #[doc(hidden)]
-    pub modules: *const *const InternalModule,
-}
-unsafe impl Sync for InternalModules {}
-unsafe impl Send for InternalModules {}
-impl InternalModules {
-    /// An empty list.
-    pub const EMPTY: Self = Self {
-        count: 0,
-        modules: core::ptr::null(),
-    };
-
-    /// Create a list with the given modules.
-    ///
-    /// # Parameters
-    /// - `modules`: The modules to place in the list.
-    pub const fn new(modules: &'static [&'static InternalModule]) -> Self {
-        Self {
-            count: modules.len() as u64,
-            modules: modules.as_ptr().cast(),
-        }
-    }
-}
-impl Deref for InternalModules {
-    type Target = [&'static InternalModule];
-
-    fn deref(&self) -> &Self::Target {
-        unsafe { core::slice::from_raw_parts(self.modules.cast(), self.count as usize) }
     }
 }

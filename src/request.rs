@@ -522,7 +522,10 @@ pub struct ModuleRequest {
     id: [u64; 4],
     revision: u64,
     response: Response<ModuleResponse>,
-    internal_modules: InternalModules,
+
+    // Revision 1+
+    internal_module_ct: u64,
+    internal_modules: *const *const InternalModule,
 }
 unsafe impl Sync for ModuleRequest {}
 unsafe impl Send for ModuleRequest {}
@@ -537,17 +540,38 @@ impl ModuleRequest {
         }
     );
 
-    setter!(
-        /// Set the internal modules to be loaded. Only available on revision 1.
-        InternalModules,
-        set_internal_modules,
-        with_internal_modules,
-        internal_modules
-    );
+    /// Seet the internal modules to be loaded. Only available on revision 1+.
+    /// This function operates in place.
+    ///
+    /// # Parameters
+    /// - `modules`: The new value of the field.
+    pub fn set_internal_modules(&mut self, modules: &'static [&'static InternalModule]) {
+        self.internal_module_ct = modules.len() as u64;
+        self.internal_modules = modules.as_ptr().cast();
+    }
+
+    /// Set the internal modules to be loaded. Only available on revision 1+.
+    /// This function returns the new value.
+    ///
+    /// # Parameters
+    /// - `modules`: The new value of the field.
+    pub const fn with_internal_modules(
+        mut self,
+        modules: &'static [&'static InternalModule],
+    ) -> Self {
+        self.internal_module_ct = modules.len() as u64;
+        self.internal_modules = modules.as_ptr().cast();
+        self
+    }
 
     /// Get the internal modules to be loaded. Only available on revision 1.
-    pub fn internal_modules(&self) -> &InternalModules {
-        &self.internal_modules
+    pub fn internal_modules(&self) -> &[&InternalModule] {
+        unsafe {
+            core::slice::from_raw_parts(
+                self.internal_modules.cast(),
+                self.internal_module_ct as usize,
+            )
+        }
     }
 }
 
