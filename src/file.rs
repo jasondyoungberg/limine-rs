@@ -74,7 +74,7 @@ pub struct File {
     tftp_ip: Option<NonZeroU32>,
     tftp_port: Option<NonZeroU32>,
     partition_idx: Option<NonZeroU32>,
-    mbr_disk_id: u32,
+    mbr_disk_id: Option<NonZeroU32>,
     gpt_disk_id: Uuid,
     gpt_partition_id: Uuid,
     partition_uuid: Uuid,
@@ -153,7 +153,7 @@ impl File {
         self.partition_idx
     }
     /// The MBR disk ID of the file, if the file was loaded from an MBR disk.
-    pub fn mbr_disk_id(&self) -> u32 {
+    pub fn mbr_disk_id(&self) -> Option<NonZeroU32> {
         self.mbr_disk_id
     }
 
