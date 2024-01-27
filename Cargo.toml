@@ -1,20 +1,22 @@
 [package]
 name = "limine"
 description = "Rust crate for parsing the limine boot protocol structures"
-version = "0.1.12"
+version = "0.2.0"
 edition = "2021"
-authors = ["Anhad Singh <andypython@protonmail.com>"]
-license = "MIT/Apache-2.0"
+authors = [
+    "Anhad Singh <andypython@protonmail.com>",
+    "Lysander Mealy <lysander.mealy@gmail.com>",
+]
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/limine-bootloader/limine-rs"
 
 readme = "README.md"
 categories = ["no-std"]
 
-[features]
-requests-section = ["limine-proc"]
-into-uuid = ["uuid"]
-default = []
-
 [dependencies]
-limine-proc = { optional = true, version = "0.1.0" }
-uuid = { optional = true, version = "1.1.2", default-features = false }
+bitflags = "2"
+uuid = { version = "1", default-features = false, optional = true }
+
+[features]
+uuid = ["dep:uuid"]
+ipaddr = []

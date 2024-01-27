@@ -1,3 +1,10 @@
+# 0.2.0 **BREAKING CHANGES**
+* Complete rewrite.
+* Removed limine-proc.
+* Added support for platform-specific requests and responses.
+* Fixed safety concerns.
+* Simplified the API heavily.
+
 # 0.1.12
 * Add the `BaseRevision` tag.
 

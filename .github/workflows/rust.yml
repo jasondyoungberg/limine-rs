@@ -14,11 +14,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
+    - uses: dtolnay/rust-toolchain@nightly
       with:
-        profile: minimal
-        toolchain: nightly
+        targets: x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu, riscv64gc-unknown-linux-gnu
+        components: rustfmt, clippy
     - name: Rust Version
       run: rustup --version && rustc --version
-    - name: Build the limine-rs crate
-      run: cargo build --verbose
+    - name: Run clippy x86_64
+      run: cargo clippy --verbose --target x86_64-unknown-linux-gnu --all-features -- -D warnings
+    - name: Run clippy aarch64
+      run: cargo clippy --verbose --target aarch64-unknown-linux-gnu --all-features -- -D warnings
+    - name: Run clippy riscv64
+      run: cargo clippy --verbose --target riscv64gc-unknown-linux-gnu --all-features -- -D warnings
+    - name: Reformat code
+      uses: mbrobbel/rustfmt-check@master
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
