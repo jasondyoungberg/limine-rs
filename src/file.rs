@@ -98,6 +98,9 @@ impl File {
     /// The path of the file. This is the path that was passed to the bootloader
     /// in either the configuration file or the `internal_modules` field of the
     /// [`ModuleRequest`](crate::request::ModuleRequest).
+    ///
+    /// If the string is valid UTF-8, it is returned as a `&str`. Otherwise, it
+    /// is returned as a raw byte slice.
     pub fn path(&self) -> Result<&str, &[u8]> {
         let c_str = unsafe { CStr::from_ptr(self.path) };
         c_str.to_str().map_err(|_| c_str.to_bytes())
@@ -106,6 +109,9 @@ impl File {
     /// to the bootloader in either the configuration file or the
     /// `internal_modules` field of the
     /// [`ModuleRequest`](crate::request::ModuleRequest).
+    ///
+    /// If the string is valid UTF-8, it is returned as a `&str`. Otherwise, it
+    /// is returned as a raw byte slice.
     pub fn cmdline(&self) -> Result<&str, &[u8]> {
         let c_str = unsafe { CStr::from_ptr(self.cmdline) };
         c_str.to_str().map_err(|_| c_str.to_bytes())
@@ -116,16 +122,16 @@ impl File {
         self.media_type
     }
 
-    #[cfg(feature = "ipaddr")]
     /// The IP address of the TFTP server, if the file was loaded from a TFTP.
+    #[cfg(feature = "ipaddr")]
     pub fn tftp_ip(&self) -> Option<Ipv4Addr> {
         self.tftp_ip.map(|v| {
             let bytes = v.get().to_ne_bytes();
             Ipv4Addr::new(bytes[0], bytes[1], bytes[2], bytes[3])
         })
     }
-    #[cfg(not(feature = "ipaddr"))]
     /// The IP address of the TFTP server, if the file was loaded from a TFTP.
+    #[cfg(not(feature = "ipaddr"))]
     pub fn tftp_ip(&self) -> Option<NonZeroU32> {
         self.tftp_ip
     }
@@ -133,10 +139,10 @@ impl File {
     pub fn tftp_port(&self) -> Option<NonZeroU32> {
         self.tftp_port
     }
-    #[cfg(feature = "ipaddr")]
     /// The address of the TFTP server, if the file was loaded from a TFTP. This
     /// is simply a combination of [`tftp_ip`](Self::tftp_ip) and
     /// [`tftp_port`](Self::tftp_port).
+    #[cfg(feature = "ipaddr")]
     pub fn tftp_addr(&self) -> Option<SocketAddrV4> {
         self.tftp_ip()
             .and_then(|ip| Some(SocketAddrV4::new(ip, self.tftp_port()?.get() as u16)))

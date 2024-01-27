@@ -231,7 +231,6 @@ impl FramebufferRequest {
     );
 }
 
-#[repr(C)]
 /// Request certain platform-dependent paging modes and flags to be set.
 ///
 /// # Usage
@@ -250,6 +249,7 @@ impl FramebufferRequest {
 /// // ...later, in our code
 /// PAGING_MODE_REQUEST.get_response() // ...
 /// # }
+#[repr(C)]
 pub struct PagingModeRequest {
     id: [u64; 4],
     revision: u64,
