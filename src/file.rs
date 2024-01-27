@@ -99,22 +99,20 @@ impl File {
     /// in either the configuration file or the `internal_modules` field of the
     /// [`ModuleRequest`](crate::request::ModuleRequest).
     ///
-    /// If the string is valid UTF-8, it is returned as a `&str`. Otherwise, it
-    /// is returned as a raw byte slice.
-    pub fn path(&self) -> Result<&str, &[u8]> {
+    /// It is returned as a raw byte slice, and the encoding is unspecified.
+    pub fn path(&self) -> &[u8] {
         let c_str = unsafe { CStr::from_ptr(self.path) };
-        c_str.to_str().map_err(|_| c_str.to_bytes())
+        c_str.to_bytes()
     }
     /// The command line of the file. This is the command line that was passed
     /// to the bootloader in either the configuration file or the
     /// `internal_modules` field of the
     /// [`ModuleRequest`](crate::request::ModuleRequest).
     ///
-    /// If the string is valid UTF-8, it is returned as a `&str`. Otherwise, it
-    /// is returned as a raw byte slice.
-    pub fn cmdline(&self) -> Result<&str, &[u8]> {
+    /// It is returned as a raw byte slice, and the encoding is unspecified.
+    pub fn cmdline(&self) -> &[u8] {
         let c_str = unsafe { CStr::from_ptr(self.cmdline) };
-        c_str.to_str().map_err(|_| c_str.to_bytes())
+        c_str.to_bytes()
     }
 
     /// The media type of the file. See [`MediaType`] for more information.

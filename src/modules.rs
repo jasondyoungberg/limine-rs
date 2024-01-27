@@ -96,14 +96,14 @@ impl InternalModule {
         self.flags = flags;
     }
 
-    /// Returns the module's path as a C string with unspecified encoding.
-    pub fn path(&self) -> &CStr {
-        unsafe { CStr::from_ptr(self.path) }
+    /// Returns the module's path as a byte slice with unspecified encoding.
+    pub fn path(&self) -> &[u8] {
+        unsafe { CStr::from_ptr(self.path).to_bytes() }
     }
-    /// Returns the module's command-line as a C string with unspecified
+    /// Returns the module's command-line as a byte slice with unspecified
     /// encoding.
-    pub fn cmdline(&self) -> &CStr {
-        unsafe { CStr::from_ptr(self.cmdline) }
+    pub fn cmdline(&self) -> &[u8] {
+        unsafe { CStr::from_ptr(self.cmdline).to_bytes() }
     }
     /// Returns the module's flags.
     pub fn flags(&self) -> ModuleFlags {
