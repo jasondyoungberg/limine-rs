@@ -75,6 +75,7 @@ macro_rules! magic {
     };
 }
 
+#[derive(Debug)]
 struct Response<T> {
     inner: UnsafeCell<Option<NonNull<T>>>,
 }
@@ -112,6 +113,7 @@ impl<T> Response<T> {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct BootloaderInfoRequest {
     id: [u64; 4],
     revision: u64,
@@ -142,6 +144,7 @@ impl BootloaderInfoRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct StackSizeRequest {
     id: [u64; 4],
     revision: u64,
@@ -188,6 +191,7 @@ impl StackSizeRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct HhdmRequest {
     id: [u64; 4],
     revision: u64,
@@ -217,6 +221,7 @@ impl HhdmRequest {
 /// FRAMEBUFFER_REQUEST.get_response() // ...
 /// # }
 #[repr(C)]
+#[derive(Debug)]
 pub struct FramebufferRequest {
     id: [u64; 4],
     revision: u64,
@@ -250,6 +255,7 @@ impl FramebufferRequest {
 /// PAGING_MODE_REQUEST.get_response() // ...
 /// # }
 #[repr(C)]
+#[derive(Debug)]
 pub struct PagingModeRequest {
     id: [u64; 4],
     revision: u64,
@@ -319,6 +325,7 @@ impl PagingModeRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 #[deprecated(note = "use `PagingModeRequest` instead")]
 pub struct FiveLevelPagingRequest {
     id: [u64; 4],
@@ -352,6 +359,7 @@ impl FiveLevelPagingRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct SmpRequest {
     id: [u64; 4],
     revision: u64,
@@ -405,6 +413,7 @@ impl SmpRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct MemoryMapRequest {
     id: [u64; 4],
     revision: u64,
@@ -422,6 +431,7 @@ impl MemoryMapRequest {
 /// Requests limine to use a specific function as the kernel entry point,
 /// instead of the one specified in the ELF.
 #[repr(C)]
+#[derive(Debug)]
 pub struct EntryPointRequest {
     id: [u64; 4],
     revision: u64,
@@ -476,6 +486,7 @@ impl EntryPointRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct KernelFileRequest {
     id: [u64; 4],
     revision: u64,
@@ -518,6 +529,7 @@ impl KernelFileRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct ModuleRequest {
     id: [u64; 4],
     revision: u64,
@@ -591,6 +603,7 @@ impl ModuleRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct RsdpRequest {
     id: [u64; 4],
     revision: u64,
@@ -621,6 +634,7 @@ impl RsdpRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct SmbiosRequest {
     id: [u64; 4],
     revision: u64,
@@ -651,6 +665,7 @@ impl SmbiosRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct EfiSystemTableRequest {
     id: [u64; 4],
     revision: u64,
@@ -681,6 +696,7 @@ impl EfiSystemTableRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct EfiMemoryMapRequest {
     id: [u64; 4],
     revision: u64,
@@ -711,6 +727,7 @@ impl EfiMemoryMapRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct BootTimeRequest {
     id: [u64; 4],
     revision: u64,
@@ -741,6 +758,7 @@ impl BootTimeRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct KernelAddressRequest {
     id: [u64; 4],
     revision: u64,
@@ -771,6 +789,7 @@ impl KernelAddressRequest {
 /// # }
 /// ```
 #[repr(C)]
+#[derive(Debug)]
 pub struct DeviceTreeBlobRequest {
     id: [u64; 4],
     revision: u64,

@@ -6,6 +6,7 @@ use bitflags::bitflags;
 
 /// A function pointer that the core will jump to when it is written to.
 #[repr(transparent)]
+#[derive(Debug)]
 pub struct GotoAddress {
     inner: AtomicPtr<()>,
 }
@@ -22,6 +23,7 @@ impl GotoAddress {
 /// A CPU entry in the SMP request.
 #[cfg(target_arch = "x86_64")]
 #[repr(C)]
+#[derive(Debug)]
 pub struct Cpu {
     /// The ACPI processor ID, according to the ACPI MADT.
     pub id: u32,
@@ -39,6 +41,7 @@ pub struct Cpu {
 /// A CPU entry in the SMP request.
 #[cfg(target_arch = "aarch64")]
 #[repr(C)]
+#[derive(Debug)]
 pub struct Cpu {
     /// The ACPI processor ID, according to the ACPI MADT.
     pub id: u32,
@@ -58,6 +61,7 @@ pub struct Cpu {
 /// A CPU entry in the SMP request.
 #[cfg(target_arch = "riscv64")]
 #[repr(C)]
+#[derive(Debug)]
 pub struct Cpu {
     /// The ACPI processor ID, according to the ACPI MADT.
     pub id: u64,
@@ -74,7 +78,7 @@ pub struct Cpu {
 
 bitflags! {
     /// Flags for the [SMP request](crate::request::SmpRequest).
-    #[derive(Default, Clone, Copy)]
+    #[derive(Default, Clone, Copy, Debug)]
     pub struct RequestFlags: u64 {
         /// Initialize the X2APIC.
         #[cfg(target_arch = "x86_64")]
@@ -85,7 +89,7 @@ bitflags! {
 #[cfg(target_arch = "x86_64")]
 bitflags! {
     /// Flags for the [SMP response](crate::response::SmpResponse).
-    #[derive(Default, Clone, Copy)]
+    #[derive(Default, Clone, Copy, Debug)]
     pub struct ResponseFlags: u32 {
         /// The X2APIC was initialized.
         #[cfg(target_arch = "x86_64")]
@@ -96,6 +100,6 @@ bitflags! {
 #[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
 bitflags! {
     /// Flags for the [SMP response](crate::response::SmpResponse).
-    #[derive(Default, Clone, Copy)]
+    #[derive(Default, Clone, Copy, Debug)]
     pub struct ResponseFlags: u64 {}
 }

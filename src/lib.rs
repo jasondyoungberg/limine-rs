@@ -1,5 +1,6 @@
 #![no_std]
 #![deny(missing_docs)]
+#![warn(missing_debug_implementations)]
 
 //! Rust Bindings for the limine boot protocol.
 //!
@@ -69,6 +70,7 @@ pub mod smp;
 /// bootloader will assume revision 0.
 ///
 /// The latest revision is 1.
+#[derive(Debug)]
 pub struct BaseRevision {
     _id: [u64; 2],
     revision: UnsafeCell<u64>,
