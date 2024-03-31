@@ -69,6 +69,7 @@ pub mod smp;
 /// bootloader will assume revision 0.
 ///
 /// The latest revision is 1.
+#[repr(C)]
 pub struct BaseRevision {
     _id: [u64; 2],
     revision: UnsafeCell<u64>,
