@@ -53,6 +53,9 @@
 //! pub static STACK_SIZE_REQUEST: StackSizeRequest = StackSizeRequest::new().with_size(STACK_SIZE);
 //! ```
 
+// `Default` is not const anyway, so implementing is not very useful.
+#![allow(clippy::new_without_default)]
+
 use core::cell::UnsafeCell;
 
 pub mod file;
