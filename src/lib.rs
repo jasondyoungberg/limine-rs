@@ -93,7 +93,7 @@ impl BaseRevision {
 
     /// Check whether the given revision is supported by the bootloader.
     pub fn is_supported(&self) -> bool {
-        (unsafe { *self.revision.get() }) == 0
+        (unsafe { self.revision.get().read_volatile() }) == 0
     }
 }
 unsafe impl Sync for BaseRevision {}
