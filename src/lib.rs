@@ -56,7 +56,7 @@
 // `Default` is not const anyway, so implementing is not very useful.
 #![allow(clippy::new_without_default)]
 
-use core::cell::UnsafeCell;
+use core::{cell::UnsafeCell, fmt::Debug};
 
 pub mod file;
 pub mod framebuffer;
@@ -98,3 +98,10 @@ impl BaseRevision {
 }
 unsafe impl Sync for BaseRevision {}
 unsafe impl Send for BaseRevision {}
+impl Debug for BaseRevision {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("BaseRevision")
+            .field("revision", unsafe { &self.revision.get().read_volatile() })
+            .finish()
+    }
+}

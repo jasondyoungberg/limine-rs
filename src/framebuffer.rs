@@ -1,6 +1,6 @@
 //! Auxiliary types for the [framebuffer request](crate::request::FramebufferRequest)
 
-use core::ffi::c_void;
+use core::{ffi::c_void, fmt::Debug};
 
 #[derive(Clone, Copy)]
 #[repr(C)]
@@ -45,9 +45,18 @@ impl MemoryModel {
     /// This is an RGB framebuffer.
     pub const RGB: Self = Self(1);
 }
+impl Debug for MemoryModel {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            &Self::RGB => write!(f, "MemoryModel::RGB"),
+            _ => write!(f, "MemoryModel({})", self.0),
+        }
+    }
+}
 
 /// A mode supported by the current framebuffer.
 #[repr(C)]
+#[derive(Debug)]
 pub struct VideoMode {
     /// The pitch (distance between rows, in bytes). This is not always the same
     /// as `(width * bpp) / 8`, as padding bytes may be added to achieve a
@@ -180,5 +189,27 @@ impl<'a> Framebuffer<'a> {
                 )
             }),
         }
+    }
+}
+impl Debug for Framebuffer<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut x = f.debug_struct("Framebuffer");
+        x.field("addr", &self.addr());
+        x.field("width", &self.width());
+        x.field("height", &self.height());
+        x.field("pitch", &self.pitch());
+        x.field("bpp", &self.bpp());
+        x.field("memory_model", &self.memory_model());
+        x.field("red_mask_size", &self.red_mask_size());
+        x.field("red_mask_shift", &self.red_mask_shift());
+        x.field("green_mask_size", &self.green_mask_size());
+        x.field("green_mask_shift", &self.green_mask_shift());
+        x.field("blue_mask_size", &self.blue_mask_size());
+        x.field("blue_mask_shift", &self.blue_mask_shift());
+        x.field("edid", &self.edid());
+        if self.revision >= 1 {
+            x.field("modes", &self.modes());
+        }
+        x.finish()
     }
 }

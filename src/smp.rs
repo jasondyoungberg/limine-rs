@@ -1,6 +1,9 @@
 //! Auxiliary types for the [SMP request](crate::request::SmpRequest).
 
-use core::sync::atomic::{AtomicPtr, Ordering};
+use core::{
+    fmt::Debug,
+    sync::atomic::{AtomicPtr, Ordering},
+};
 
 use bitflags::bitflags;
 
@@ -16,6 +19,13 @@ impl GotoAddress {
     /// core jumps to the given function.
     pub fn write(&self, func: unsafe extern "C" fn(&Cpu) -> !) {
         self.inner.store(func as *mut (), Ordering::Release);
+    }
+}
+impl Debug for GotoAddress {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("GotoAddress")
+            .field(&self.inner.as_ptr())
+            .finish()
     }
 }
 
@@ -72,9 +82,46 @@ pub struct Cpu {
     pub extra: u64,
 }
 
+#[cfg(target_arch = "x86_64")]
+impl Debug for Cpu {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Cpu")
+            .field("id", &self.id)
+            .field("lapic_id", &self.lapic_id)
+            .field("goto_address", &self.goto_address)
+            .field("extra", &self.extra)
+            .finish()
+    }
+}
+
+#[cfg(target_arch = "aarch64")]
+impl Debug for Cpu {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Cpu")
+            .field("id", &self.id)
+            .field("gic_iface_no", &self.gic_iface_no)
+            .field("mpidr", &self.mpidr)
+            .field("goto_address", &self.goto_address)
+            .field("extra", &self.extra)
+            .finish()
+    }
+}
+
+#[cfg(target_arch = "riscv64")]
+impl Debug for Cpu {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Cpu")
+            .field("id", &self.id)
+            .field("hartid", &self.hartid)
+            .field("goto_address", &self.goto_address)
+            .field("extra", &self.extra)
+            .finish()
+    }
+}
+
 bitflags! {
     /// Flags for the [SMP request](crate::request::SmpRequest).
-    #[derive(Default, Clone, Copy)]
+    #[derive(Default, Clone, Copy, Debug)]
     pub struct RequestFlags: u64 {
         /// Initialize the X2APIC.
         #[cfg(target_arch = "x86_64")]
@@ -85,7 +132,7 @@ bitflags! {
 #[cfg(target_arch = "x86_64")]
 bitflags! {
     /// Flags for the [SMP response](crate::response::SmpResponse).
-    #[derive(Default, Clone, Copy)]
+    #[derive(Default, Clone, Copy, Debug)]
     pub struct ResponseFlags: u32 {
         /// The X2APIC was initialized.
         #[cfg(target_arch = "x86_64")]
@@ -96,6 +143,6 @@ bitflags! {
 #[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
 bitflags! {
     /// Flags for the [SMP response](crate::response::SmpResponse).
-    #[derive(Default, Clone, Copy)]
+    #[derive(Default, Clone, Copy, Debug)]
     pub struct ResponseFlags: u64 {}
 }

@@ -1,11 +1,13 @@
 //! Auxiliary types for the [paging mode
 //! request](crate::request::PagingModeRequest).
 
+use core::fmt::Debug;
+
 use bitflags::bitflags;
 
 bitflags! {
     /// Paging mode flags. None are currently specified.
-    #[derive(Default, Clone, Copy)]
+    #[derive(Default, Clone, Copy, Debug)]
     pub struct Flags: u64 {}
 }
 
@@ -35,4 +37,23 @@ impl Mode {
     pub const SV48: Self = Self(1);
     /// (riscv64 only) SV57, i.e. 57-bit virtual addresses.
     pub const SV57: Self = Self(2);
+}
+
+impl Debug for Mode {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
+        match self {
+            &Self::FOUR_LEVEL => write!(f, "Mode::FOUR_LEVEL"),
+            &Self::FIVE_LEVEL => write!(f, "Mode::FIVE_LEVEL"),
+            _ => write!(f, "Mode({})", self.0),
+        }
+
+        #[cfg(target_arch = "riscv64")]
+        match self {
+            &Self::SV39 => write!(f, "Mode::SV39"),
+            &Self::SV48 => write!(f, "Mode::SV48"),
+            &Self::SV57 => write!(f, "Mode::SV57"),
+            _ => write!(f, "Mode({})", self.0),
+        }
+    }
 }

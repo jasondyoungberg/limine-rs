@@ -1,6 +1,6 @@
 //! Request structures
 
-use core::{cell::UnsafeCell, ptr::NonNull};
+use core::{cell::UnsafeCell, fmt::Debug, ptr::NonNull};
 
 use crate::{modules::InternalModule, paging, response::*, smp};
 
@@ -95,6 +95,11 @@ impl<T> Response<T> {
         }
     }
 }
+impl<T: Debug> Debug for Response<T> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("Response").field(&self.get()).finish()
+    }
+}
 
 /// Request the name and version of the loading bootloader.
 ///
@@ -124,6 +129,14 @@ impl BootloaderInfoRequest {
         magic!(0xf55038d8e2a1202f, 0x279426fcf5f59740),
         {}
     );
+}
+impl Debug for BootloaderInfoRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("BootloaderInfoRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
 }
 
 /// Request a differently-sized stack.
@@ -171,6 +184,15 @@ impl StackSizeRequest {
         self.size
     }
 }
+impl Debug for StackSizeRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("StackSizeRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .field("size", &self.size())
+            .finish()
+    }
+}
 
 /// Request information about the higher-half direct mapping.
 ///
@@ -201,6 +223,14 @@ impl HhdmRequest {
         {}
     );
 }
+impl Debug for HhdmRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("HhdmRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
+}
 
 /// Request a framebuffer for graphics output.
 ///
@@ -229,6 +259,14 @@ impl FramebufferRequest {
         magic!(0x9d5827dcd881dd75, 0xa3148604f6fab11b),
         {}
     );
+}
+impl Debug for FramebufferRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("FramebufferRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
 }
 
 /// Request certain platform-dependent paging modes and flags to be set.
@@ -299,6 +337,16 @@ impl PagingModeRequest {
         self.flags
     }
 }
+impl Debug for PagingModeRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("PagingModeRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .field("mode", &self.mode())
+            .field("flags", &self.flags())
+            .finish()
+    }
+}
 
 /// **This request is deprecated and was removed from the reference
 /// implementation. Use [`PagingModeRequest`] instead.**
@@ -333,6 +381,15 @@ impl FiveLevelPagingRequest {
         magic!(0x94469551da9b3192, 0xebe5e86db7382888),
         {}
     );
+}
+#[allow(deprecated)]
+impl Debug for FiveLevelPagingRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("FiveLevelPagingRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
 }
 
 /// Request the start of all other cores on the system, if they exist. Without
@@ -383,6 +440,15 @@ impl SmpRequest {
         self.flags
     }
 }
+impl Debug for SmpRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("SmpRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .field("flags", &self.flags())
+            .finish()
+    }
+}
 
 /// Request limine's memory map. This may or may not be the same as the one
 /// given by the BIOS/UEFI firmware. Entries are guaranteed to be in order of
@@ -417,6 +483,14 @@ impl MemoryMapRequest {
         magic!(0x67cf3d9d378a806f, 0xe304acdfc50c3c62),
         {}
     );
+}
+impl Debug for MemoryMapRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("MemoryMapRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
 }
 
 /// Requests limine to use a specific function as the kernel entry point,
@@ -458,6 +532,15 @@ impl EntryPointRequest {
         self.entry_point
     }
 }
+impl Debug for EntryPointRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("EntryPointRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .field("entry_point", &self.entry_point())
+            .finish()
+    }
+}
 
 /// Request information about the loaded kernel file. See [`File`](file::File)
 /// for more information.
@@ -488,6 +571,14 @@ impl KernelFileRequest {
         magic!(0xad97e90e83f1ed67, 0x31eb5d1c5ff23b69),
         {}
     );
+}
+impl Debug for KernelFileRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("KernelFileRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
 }
 
 /// Request information about the loaded modules. See [`File`](file::File) for
@@ -574,6 +665,18 @@ impl ModuleRequest {
         }
     }
 }
+impl Debug for ModuleRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut x = f.debug_struct("ModuleRequest");
+        x.field("revision", &self.revision());
+        x.field("response", &self.get_response());
+        if self.revision() >= 1 {
+            x.field("internal_module_ct", &self.internal_module_ct);
+            x.field("internal_modules", &self.internal_modules);
+        }
+        x.finish()
+    }
+}
 
 /// Request the RSDP address.
 ///
@@ -603,6 +706,14 @@ impl RsdpRequest {
         magic!(0xc5e77b6b397e7b43, 0x27637845accdcf3c),
         {}
     );
+}
+impl Debug for RsdpRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("RsdpRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
 }
 
 /// Request the address of the SMBIOS table.
@@ -634,6 +745,14 @@ impl SmbiosRequest {
         {}
     );
 }
+impl Debug for SmbiosRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("SmbiosRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
+}
 
 /// Request the address of the UEFI system table.
 ///
@@ -663,6 +782,14 @@ impl EfiSystemTableRequest {
         magic!(0x5ceba5163eaaf6d6, 0x0a6981610cf65fcc),
         {}
     );
+}
+impl Debug for EfiSystemTableRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("EfiSystemTableRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
 }
 
 /// Request the address of the UEFI memory map.
@@ -694,6 +821,14 @@ impl EfiMemoryMapRequest {
         {}
     );
 }
+impl Debug for EfiMemoryMapRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("EfiMemoryMapRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
+}
 
 /// Request the boot time in seconds
 ///
@@ -723,6 +858,14 @@ impl BootTimeRequest {
         magic!(0x502746e184c088aa, 0xfbc5ec83e6327893),
         {}
     );
+}
+impl Debug for BootTimeRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("BootTimeRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
 }
 
 /// Request the base address of the kernel code, in virtual and physical space.
@@ -754,6 +897,14 @@ impl KernelAddressRequest {
         {}
     );
 }
+impl Debug for KernelAddressRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("KernelAddressRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
+}
 
 /// Request the address of the device-tree blob, if one is present.
 ///
@@ -783,4 +934,12 @@ impl DeviceTreeBlobRequest {
         magic!(0xb40ddb48fb54bac7, 0x545081493f81ffb7),
         {}
     );
+}
+impl Debug for DeviceTreeBlobRequest {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("DeviceTreeBlobRequest")
+            .field("revision", &self.revision())
+            .field("response", &self.get_response())
+            .finish()
+    }
 }
