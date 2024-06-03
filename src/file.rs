@@ -207,10 +207,12 @@ impl Debug for File {
         x.field("revision", &self.revision());
         x.field("addr", &self.addr());
         x.field("size", &self.size());
-        x.field(
-            "path",
-            &core::str::from_utf8(self.path()).unwrap_or("<invalid utf-8>"),
-        );
+
+        match core::str::from_utf8(self.path()) {
+            Ok(path) => x.field("path", &path),
+            Err(err) => x.field("path", &err),
+        };
+
         x.field("cmdline", &self.cmdline());
         x.field("media_type", &self.media_type());
         x.field("tftp_ip", &self.tftp_ip());
