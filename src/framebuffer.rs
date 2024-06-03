@@ -206,7 +206,7 @@ impl Debug for Framebuffer<'_> {
         x.field("green_mask_shift", &self.green_mask_shift());
         x.field("blue_mask_size", &self.blue_mask_size());
         x.field("blue_mask_shift", &self.blue_mask_shift());
-        x.field("edid", &self.edid());
+        x.field("edid", &format_args!("<{} bytes>", self.edid().len()));
         if self.revision >= 1 {
             x.field("modes", &self.modes());
         }
