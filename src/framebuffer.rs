@@ -164,8 +164,14 @@ impl<'a> Framebuffer<'a> {
     }
 
     /// The raw EDID bytes of the display attached to this framebuffer.
-    pub fn edid(&self) -> &[u8] {
-        unsafe { core::slice::from_raw_parts(self.inner.v0.edid, self.inner.v0.edid_size as usize) }
+    pub fn edid(&self) -> Option<&[u8]> {
+        if unsafe { self.inner.v0 }.edid.is_null() {
+            None
+        } else {
+            Some(unsafe {
+                core::slice::from_raw_parts(self.inner.v0.edid, self.inner.v0.edid_size as usize)
+            })
+        }
     }
 
     /// The video modes supported on this framebuffer. Only available on
