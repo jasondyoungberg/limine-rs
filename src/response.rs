@@ -145,8 +145,14 @@ impl Debug for FramebufferResponse {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("FramebufferResponse")
             .field("revision", &self.revision())
-            .field("framebuffers", &format_args!("<todo>"))
+            .field("framebuffers", &FramebuffersDebugHelper(self))
             .finish()
+    }
+}
+struct FramebuffersDebugHelper<'a>(&'a FramebufferResponse);
+impl Debug for FramebuffersDebugHelper<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_list().entries(self.0.framebuffers()).finish()
     }
 }
 
