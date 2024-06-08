@@ -43,16 +43,16 @@ impl Debug for Mode {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
         match self {
-            &Self::FOUR_LEVEL => write!(f, "Mode::FOUR_LEVEL"),
-            &Self::FIVE_LEVEL => write!(f, "Mode::FIVE_LEVEL"),
+            &Self::FOUR_LEVEL => write!(f, "FOUR_LEVEL"),
+            &Self::FIVE_LEVEL => write!(f, "FIVE_LEVEL"),
             _ => write!(f, "Mode({})", self.0),
         }
 
         #[cfg(target_arch = "riscv64")]
         match self {
-            &Self::SV39 => write!(f, "Mode::SV39"),
-            &Self::SV48 => write!(f, "Mode::SV48"),
-            &Self::SV57 => write!(f, "Mode::SV57"),
+            &Self::SV39 => write!(f, "SV39"),
+            &Self::SV48 => write!(f, "SV48"),
+            &Self::SV57 => write!(f, "SV57"),
             _ => write!(f, "Mode({})", self.0),
         }
     }

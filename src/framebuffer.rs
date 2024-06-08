@@ -48,7 +48,7 @@ impl MemoryModel {
 impl Debug for MemoryModel {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            &Self::RGB => write!(f, "MemoryModel::RGB"),
+            &Self::RGB => write!(f, "RGB"),
             _ => write!(f, "MemoryModel({})", self.0),
         }
     }
@@ -197,6 +197,8 @@ impl<'a> Framebuffer<'a> {
 }
 impl Debug for Framebuffer<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let alternate = f.alternate();
+
         let mut x = f.debug_struct("Framebuffer");
         x.field("addr", &self.addr());
         x.field("width", &self.width());
@@ -210,7 +212,13 @@ impl Debug for Framebuffer<'_> {
         x.field("green_mask_shift", &self.green_mask_shift());
         x.field("blue_mask_size", &self.blue_mask_size());
         x.field("blue_mask_shift", &self.blue_mask_shift());
-        x.field("edid", &format_args!("<{} bytes>", self.edid().len()));
+        if let Some(edid) = self.edid() {
+            if alternate {
+                x.field("edid", &format_args!("{:?}", edid));
+            } else {
+                x.field("edid", &format_args!("<{} bytes>", edid.len()));
+            }
+        }
         if let Some(modes) = self.modes() {
             x.field("modes", &format_args!("<{} modes>", modes.len()));
         }

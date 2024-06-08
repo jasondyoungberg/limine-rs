@@ -23,9 +23,7 @@ impl GotoAddress {
 }
 impl Debug for GotoAddress {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("GotoAddress")
-            .field(&self.inner.as_ptr())
-            .finish()
+        f.debug_tuple("GotoAddress").finish()
     }
 }
 

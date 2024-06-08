@@ -82,9 +82,9 @@ impl MediaType {
 impl Debug for MediaType {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            &Self::GENERIC => write!(f, "MediaType::GENERIC"),
-            &Self::OPTICAL => write!(f, "MediaType::OPTICAL"),
-            &Self::TFTP => write!(f, "MediaType::TFTP"),
+            &Self::GENERIC => write!(f, "GENERIC"),
+            &Self::OPTICAL => write!(f, "OPTICAL"),
+            &Self::TFTP => write!(f, "TFTP"),
             _ => write!(f, "MediaType({})", self.0),
         }
     }
@@ -210,15 +210,16 @@ impl Debug for File {
 
         match core::str::from_utf8(self.path()) {
             Ok(path) => x.field("path", &path),
-            Err(err) => x.field("path", &err),
+            Err(_) => x.field("path", &self.path()),
         };
 
         x.field("cmdline", &self.cmdline());
         x.field("media_type", &self.media_type());
+        #[cfg(feature = "ipaddr")]
+        x.field("tftp_ip", &self.tftp_addr());
+        #[cfg(not(feature = "ipaddr"))]
         x.field("tftp_ip", &self.tftp_ip());
         x.field("tftp_port", &self.tftp_port());
-        #[cfg(feature = "ipaddr")]
-        x.field("tftp_addr", &self.tftp_addr());
         x.field("partition_idx", &self.partition_idx());
         x.field("mbr_disk_id", &self.mbr_disk_id());
         x.field("gpt_disk_id", &self.gpt_disk_id());
