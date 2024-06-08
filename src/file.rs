@@ -81,10 +81,10 @@ impl MediaType {
 }
 impl Debug for MediaType {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        match self {
-            &Self::GENERIC => write!(f, "GENERIC"),
-            &Self::OPTICAL => write!(f, "OPTICAL"),
-            &Self::TFTP => write!(f, "TFTP"),
+        match *self {
+            Self::GENERIC => write!(f, "GENERIC"),
+            Self::OPTICAL => write!(f, "OPTICAL"),
+            Self::TFTP => write!(f, "TFTP"),
             _ => write!(f, "MediaType({})", self.0),
         }
     }

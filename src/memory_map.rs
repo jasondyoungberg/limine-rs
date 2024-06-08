@@ -35,15 +35,15 @@ impl From<u64> for EntryType {
 }
 impl Debug for EntryType {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        match self {
-            &Self::USABLE => write!(f, "USABLE"),
-            &Self::RESERVED => write!(f, "RESERVED"),
-            &Self::ACPI_RECLAIMABLE => write!(f, "ACPI_RECLAIMABLE"),
-            &Self::ACPI_NVS => write!(f, "ACPI_NVS"),
-            &Self::BAD_MEMORY => write!(f, "BAD_MEMORY"),
-            &Self::BOOTLOADER_RECLAIMABLE => write!(f, "BOOTLOADER_RECLAIMABLE"),
-            &Self::KERNEL_AND_MODULES => write!(f, "KERNEL_AND_MODULES"),
-            &Self::FRAMEBUFFER => write!(f, "FRAMEBUFFER"),
+        match *self {
+            Self::USABLE => write!(f, "USABLE"),
+            Self::RESERVED => write!(f, "RESERVED"),
+            Self::ACPI_RECLAIMABLE => write!(f, "ACPI_RECLAIMABLE"),
+            Self::ACPI_NVS => write!(f, "ACPI_NVS"),
+            Self::BAD_MEMORY => write!(f, "BAD_MEMORY"),
+            Self::BOOTLOADER_RECLAIMABLE => write!(f, "BOOTLOADER_RECLAIMABLE"),
+            Self::KERNEL_AND_MODULES => write!(f, "KERNEL_AND_MODULES"),
+            Self::FRAMEBUFFER => write!(f, "FRAMEBUFFER"),
             _ => write!(f, "EntryType({})", self.0),
         }
     }
