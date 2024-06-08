@@ -1,6 +1,6 @@
 //! Auxiliary types for the [framebuffer request](crate::request::FramebufferRequest)
 
-use core::ffi::c_void;
+use core::{ffi::c_void, ptr::NonNull};
 
 #[derive(Clone, Copy)]
 #[repr(C)]
@@ -19,7 +19,7 @@ pub(crate) struct RawFramebufferV0 {
     blue_mask_shift: u8,
     _unused: [u8; 7],
     edid_size: u64,
-    edid: *mut u8,
+    edid: Option<NonNull<u8>>,
 }
 
 #[derive(Clone, Copy)]
@@ -165,11 +165,9 @@ impl<'a> Framebuffer<'a> {
 
     /// The raw EDID bytes of the display attached to this framebuffer.
     pub fn edid(&self) -> Option<&[u8]> {
-        if unsafe { self.inner.v0 }.edid.is_null() {
-            None
-        } else {
-            Some(unsafe {
-                core::slice::from_raw_parts(self.inner.v0.edid, self.inner.v0.edid_size as usize)
+        unsafe {
+            self.inner.v0.edid.map(|ptr| {
+                core::slice::from_raw_parts(ptr.as_ptr(), self.inner.v0.edid_size as usize)
             })
         }
     }
