@@ -6,7 +6,7 @@ use bitflags::bitflags;
 
 bitflags! {
     /// Flags for internal modules
-    #[derive(PartialEq, Eq, Clone, Copy)]
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     pub struct ModuleFlags: u64 {
         /// The module is required. If it is not found, the bootloader will
         /// refuse to boot.
@@ -31,6 +31,7 @@ macro_rules! cstr {
 /// An internal module that the kernel requests from the bootloader. Only
 /// available with request revision 1 and greater.
 #[repr(C)]
+#[derive(Debug)]
 pub struct InternalModule {
     path: *const c_char,
     cmdline: *const c_char,

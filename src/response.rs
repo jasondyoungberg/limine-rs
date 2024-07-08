@@ -26,6 +26,7 @@ macro_rules! impl_base_fns {
 /// A response to a [bootloader info
 /// request](crate::request::BootloaderInfoRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct BootloaderInfoResponse {
     revision: u64,
     name: *const c_char,
@@ -51,6 +52,7 @@ impl BootloaderInfoResponse {
 /// response has no fields. If it is provided, the bootloader complied with the
 /// request.
 #[repr(C)]
+#[derive(Debug)]
 pub struct StackSizeResponse {
     revision: u64,
 }
@@ -61,6 +63,7 @@ impl StackSizeResponse {
 /// A response to a [higher-half direct map
 /// request](crate::request::HhdmRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct HhdmResponse {
     revision: u64,
     offset: u64,
@@ -98,6 +101,7 @@ impl HhdmResponse {
 
 /// A response to a [framebuffer request](crate::request::FramebufferRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct FramebufferResponse {
     revision: u64,
     framebuffer_ct: u64,
@@ -119,6 +123,7 @@ impl FramebufferResponse {
 
 /// A response to a [paging mode request](crate::request::PagingModeRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct PagingModeResponse {
     revision: u64,
     mode: Mode,
@@ -147,6 +152,7 @@ impl PagingModeResponse {
 /// request](crate::request::FiveLevelPagingRequest). This response has no
 /// fields. If it is provided, five-level paging is supported and enabled.
 #[repr(C)]
+#[derive(Debug)]
 pub struct FiveLevelPagingResponse {
     revision: u64,
 }
@@ -157,6 +163,7 @@ impl FiveLevelPagingResponse {
 /// A response to a [smp request](crate::request::SmpRequest). This response
 /// contains information about the boot processor and all other processors.
 #[repr(C)]
+#[derive(Debug)]
 pub struct SmpResponse {
     revision: u64,
     flags: smp::ResponseFlags,
@@ -217,6 +224,7 @@ impl SmpResponse {
 
 /// A response to a [memory map request](crate::request::MemoryMapRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct MemoryMapResponse {
     revision: u64,
     entry_ct: u64,
@@ -244,6 +252,7 @@ impl MemoryMapResponse {
 
 /// A response to a [kernel file request](crate::request::KernelFileRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct EntryPointResponse {
     revision: u64,
 }
@@ -253,6 +262,7 @@ impl EntryPointResponse {
 
 /// A response to a [kernel file request](crate::request::KernelFileRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct KernelFileResponse {
     revision: u64,
     file: *const file::File,
@@ -270,6 +280,7 @@ impl KernelFileResponse {
 
 /// A response to a [module request](crate::request::ModuleRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct ModuleResponse {
     revision: u64,
     module_ct: u64,
@@ -289,6 +300,7 @@ impl ModuleResponse {
 
 /// A response to a [rsdp request](crate::request::RsdpRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct RsdpResponse {
     revision: u64,
     address: *const c_void,
@@ -306,6 +318,7 @@ impl RsdpResponse {
 
 /// A response to a [smbios request](crate::request::SmbiosRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct SmbiosResponse {
     revision: u64,
     entry_32: Option<NonNull<c_void>>,
@@ -328,6 +341,7 @@ impl SmbiosResponse {
 
 /// A response to a [system table request](crate::request::EfiSystemTableRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct EfiSystemTableResponse {
     revision: u64,
     address: *const c_void,
@@ -345,6 +359,7 @@ impl EfiSystemTableResponse {
 
 /// A response to a [memory map request](crate::request::EfiMemoryMapRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct EfiMemoryMapResponse {
     revision: u64,
     memmap: *const c_void,
@@ -378,6 +393,7 @@ impl EfiMemoryMapResponse {
 
 /// A response to a [boot time request](crate::request::BootTimeRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct BootTimeResponse {
     revision: u64,
     boot_time: i64,
@@ -402,6 +418,7 @@ impl BootTimeResponse {
 /// let phys_addr = virt_addr - virtual_base + physical_base;
 /// ````
 #[repr(C)]
+#[derive(Debug)]
 pub struct KernelAddressResponse {
     revision: u64,
     physical_base: u64,
@@ -422,6 +439,7 @@ impl KernelAddressResponse {
 
 /// A response to a [device tree blob request](crate::request::DeviceTreeBlobRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct DeviceTreeBlobResponse {
     revision: u64,
     dtb_ptr: *const c_void,

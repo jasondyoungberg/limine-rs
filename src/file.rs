@@ -12,7 +12,7 @@ use core::net::{Ipv4Addr, SocketAddrV4};
 /// A UUID. With the `uuid` feature, this can be converted directly to
 /// [`uuid::Uuid`] via [`Into`], and the reverse via [`From`].
 #[repr(C)]
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Uuid {
     /// The first 32 bits of the UUID.
     pub a: u32,
@@ -47,7 +47,7 @@ impl From<Uuid> for uuid::Uuid {
 }
 
 /// A media type for a file.
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(transparent)]
 pub struct MediaType(u32);
 impl MediaType {
@@ -63,6 +63,7 @@ impl MediaType {
 /// [`KernelFileRequest`](crate::request::KernelFileRequest) and
 /// [`ModuleRequest`](crate::request::ModuleRequest).
 #[repr(C)]
+#[derive(Debug)]
 pub struct File {
     revision: u64,
     addr: *mut c_void,

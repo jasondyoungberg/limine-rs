@@ -2,7 +2,7 @@
 
 /// A type of entry within the memory map.
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct EntryType(u64);
 impl EntryType {
     /// The memory region is freely usable.
@@ -34,6 +34,7 @@ impl From<u64> for EntryType {
 
 /// A memory map entry.
 #[repr(C)]
+#[derive(Debug)]
 pub struct Entry {
     /// The base of the memory region, in *physical space*.
     pub base: u64,

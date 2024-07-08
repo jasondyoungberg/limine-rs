@@ -1,5 +1,6 @@
 #![no_std]
 #![deny(missing_docs)]
+#![deny(missing_debug_implementations)]
 
 //! Rust Bindings for the limine boot protocol.
 //!
@@ -73,6 +74,7 @@ pub mod smp;
 ///
 /// The latest revision is 1.
 #[repr(C)]
+#[derive(Debug)]
 pub struct BaseRevision {
     _id: [u64; 2],
     revision: UnsafeCell<u64>,

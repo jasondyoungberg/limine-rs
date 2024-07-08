@@ -5,13 +5,13 @@ use bitflags::bitflags;
 
 bitflags! {
     /// Paging mode flags. None are currently specified.
-    #[derive(Default, Clone, Copy)]
+    #[derive(Debug, Default, Clone, Copy)]
     pub struct Flags: u64 {}
 }
 
 /// A paging mode.
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Mode(u64);
 impl From<u64> for Mode {
     fn from(value: u64) -> Self {

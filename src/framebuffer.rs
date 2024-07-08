@@ -1,8 +1,9 @@
 //! Auxiliary types for the [framebuffer request](crate::request::FramebufferRequest)
 
 use core::{ffi::c_void, ptr::NonNull};
+use core::fmt::{Debug, Formatter};
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub(crate) struct RawFramebufferV0 {
     addr: *mut c_void,
@@ -22,7 +23,7 @@ pub(crate) struct RawFramebufferV0 {
     edid: Option<NonNull<u8>>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub(crate) struct RawFramebufferV1 {
     _v0: RawFramebufferV0,
@@ -36,10 +37,17 @@ pub(crate) union RawFramebuffer {
     v1: RawFramebufferV1,
 }
 
+impl Debug for RawFramebuffer {
+    fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
+        // v0 is common for both versions
+        unsafe { self.v0 }.fmt(f)
+    }
+}
+
 /// A memory model used by a framebuffer. Currently only
 /// [`MemoryModel::RGB`](Self::RGB) is defined.
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct MemoryModel(u8);
 impl MemoryModel {
     /// This is an RGB framebuffer.
@@ -48,6 +56,7 @@ impl MemoryModel {
 
 /// A mode supported by the current framebuffer.
 #[repr(C)]
+#[derive(Debug)]
 pub struct VideoMode {
     /// The pitch (distance between rows, in bytes). This is not always the same
     /// as `(width * bpp) / 8`, as padding bytes may be added to achieve a
@@ -88,6 +97,7 @@ pub struct VideoMode {
 /// Two revisions currently exist of the framebuffer type. However, the type
 /// itself has no revision field. In order to keep this type safe, we wrap the
 /// pointer with its associated revision taken from the response.
+#[derive(Debug)]
 pub struct Framebuffer<'a> {
     revision: u64,
     inner: &'a RawFramebuffer,
