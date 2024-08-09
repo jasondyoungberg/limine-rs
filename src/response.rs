@@ -8,9 +8,10 @@ use core::{
 
 use crate::{
     file,
+    firmware_type::FirmwareType,
     framebuffer::{Framebuffer, RawFramebuffer},
     memory_map,
-    paging::{Flags, Mode},
+    paging::Mode,
     smp,
 };
 
@@ -44,6 +45,22 @@ impl BootloaderInfoResponse {
     /// Returns the version of the loading bootloader.
     pub fn version(&self) -> &str {
         unsafe { CStr::from_ptr(self.version) }.to_str().unwrap()
+    }
+}
+
+/// A response to a [firmware type request
+/// ](crate::request::FirmwareTypeRequest).
+#[repr(C)]
+pub struct FirmwareTypeResponse {
+    revision: u64,
+    firmware_type: FirmwareType,
+}
+impl FirmwareTypeResponse {
+    impl_base_fns!();
+
+    /// Returns the firmware type.
+    pub fn firmware_type(&self) -> FirmwareType {
+        self.firmware_type
     }
 }
 
@@ -122,7 +139,6 @@ impl FramebufferResponse {
 pub struct PagingModeResponse {
     revision: u64,
     mode: Mode,
-    flags: Flags,
 }
 impl PagingModeResponse {
     impl_base_fns!();
@@ -132,26 +148,6 @@ impl PagingModeResponse {
     pub fn mode(&self) -> Mode {
         self.mode
     }
-    /// Returns the flags that were enabled by the bootloader. See [`Flags`] for
-    /// more information.
-    pub fn flags(&self) -> Flags {
-        self.flags
-    }
-}
-
-/// **This request is deprecated and was removed from the reference
-/// implementation. Use [`PagingModeRequest`](crate::request::PagingModeRequest)
-/// instead.**
-///
-/// A response to a [five-level paging
-/// request](crate::request::FiveLevelPagingRequest). This response has no
-/// fields. If it is provided, five-level paging is supported and enabled.
-#[repr(C)]
-pub struct FiveLevelPagingResponse {
-    revision: u64,
-}
-impl FiveLevelPagingResponse {
-    impl_base_fns!();
 }
 
 /// A response to a [smp request](crate::request::SmpRequest). This response

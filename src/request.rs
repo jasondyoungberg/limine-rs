@@ -126,6 +126,36 @@ impl BootloaderInfoRequest {
     );
 }
 
+/// Request the type of the firmware.
+///
+/// # Usage
+/// ```rust
+/// # use limine::{request::FirmwareTypeRequest, response::FirmwareTypeResponse, BaseRevision};
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
+///
+/// // Request the firmware type
+/// static FIRMWARE_TYPE_REQUEST: FirmwareTypeRequest = FirmwareTypeRequest::new();
+///
+/// # fn dummy<'a>() -> Option<&'a FirmwareTypeResponse> {
+/// // ...later, in our code
+/// FIRMWARE_TYPE_REQUEST.get_response() // ...
+/// # }
+/// ```
+#[repr(C)]
+pub struct FirmwareTypeRequest {
+    id: [u64; 4],
+    revision: u64,
+    response: Response<FirmwareTypeResponse>,
+}
+impl FirmwareTypeRequest {
+    impl_base_fns!(
+        0,
+        FirmwareTypeResponse,
+        magic!(0x8c2f75d90bef28a8, 0x7045a4688eac00c3),
+        {}
+    );
+}
+
 /// Request a differently-sized stack.
 ///
 /// # Usage
@@ -255,19 +285,20 @@ pub struct PagingModeRequest {
     revision: u64,
     response: Response<PagingModeResponse>,
     mode: paging::Mode,
-    flags: paging::Flags,
+
+    // Revision 1+
+    max_mode: paging::Mode,
+    min_mode: paging::Mode,
 }
 impl PagingModeRequest {
     impl_base_fns!(
-        0,
+        1,
         PagingModeResponse,
         magic!(0x95c1a0edab0944cb, 0xa4e5cb3842f7488a),
         {
-            #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
-            mode: paging::Mode::FOUR_LEVEL,
-            #[cfg(target_arch = "riscv64")]
-            mode: paging::Mode::SV48,
-            flags: paging::Flags::empty(),
+            mode: paging::Mode::DEFAULT,
+            max_mode: paging::Mode::DEFAULT,
+            min_mode: paging::Mode::MIN,
         }
     );
 
@@ -280,12 +311,20 @@ impl PagingModeRequest {
         mode
     );
     setter!(
-        /// Set the requested paging flags. See [`Flags`](paging::Flags) for
-        /// more information.
-        paging::Flags,
-        set_flags,
-        with_flags,
-        flags
+        /// Set the requested maximum paging mode. See [`Mode`](paging::Mode) for more
+        /// information.
+        paging::Mode,
+        set_max_mode,
+        with_max_mode,
+        max_mode
+    );
+    setter!(
+        /// Set the requested minimum paging mode. See [`Mode`](paging::Mode) for more
+        /// information.
+        paging::Mode,
+        set_min_mode,
+        with_min_mode,
+        min_mode
     );
 
     /// Get the requested paging mode. See [`Mode`](paging::Mode) for more
@@ -293,46 +332,16 @@ impl PagingModeRequest {
     pub fn mode(&self) -> paging::Mode {
         self.mode
     }
-    /// Get the requested paging flags. See [`Flags`](paging::Flags) for more
+    /// Get the requested maximum paging mode. See [`Mode`](paging::Mode) for more
     /// information.
-    pub fn flags(&self) -> paging::Flags {
-        self.flags
+    pub fn max_mode(&self) -> paging::Mode {
+        self.max_mode
     }
-}
-
-/// **This request is deprecated and was removed from the reference
-/// implementation. Use [`PagingModeRequest`] instead.**
-///
-/// Request a five-level paging mode.
-///
-/// # Usage
-/// ```rust
-/// # use limine::{request::FiveLevelPagingRequest, response::FiveLevelPagingResponse, BaseRevision};
-/// static BASE_REVISION: BaseRevision = BaseRevision::new();
-///
-/// // Request a five-level paging mode
-/// static FIVE_LEVEL_PAGING_REQUEST: FiveLevelPagingRequest = FiveLevelPagingRequest::new();
-///
-/// # fn dummy<'a>() -> Option<&'a FiveLevelPagingResponse> {
-/// // ...later, in our code
-/// FIVE_LEVEL_PAGING_REQUEST.get_response() // ...
-/// # }
-/// ```
-#[repr(C)]
-#[deprecated(note = "use `PagingModeRequest` instead")]
-pub struct FiveLevelPagingRequest {
-    id: [u64; 4],
-    revision: u64,
-    response: Response<FiveLevelPagingResponse>,
-}
-#[allow(deprecated)]
-impl FiveLevelPagingRequest {
-    impl_base_fns!(
-        0,
-        FiveLevelPagingResponse,
-        magic!(0x94469551da9b3192, 0xebe5e86db7382888),
-        {}
-    );
+    /// Get the requested minimum paging mode. See [`Mode`](paging::Mode) for more
+    /// information.
+    pub fn min_mode(&self) -> paging::Mode {
+        self.min_mode
+    }
 }
 
 /// Request the start of all other cores on the system, if they exist. Without
