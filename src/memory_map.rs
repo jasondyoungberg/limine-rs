@@ -1,5 +1,7 @@
 //! Auxiliary types for the [memory map request](crate::request::MemoryMapRequest)
 
+use core::fmt::Debug;
+
 /// A type of entry within the memory map.
 #[repr(transparent)]
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -31,6 +33,21 @@ impl From<u64> for EntryType {
         Self(val)
     }
 }
+impl Debug for EntryType {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match *self {
+            Self::USABLE => write!(f, "USABLE"),
+            Self::RESERVED => write!(f, "RESERVED"),
+            Self::ACPI_RECLAIMABLE => write!(f, "ACPI_RECLAIMABLE"),
+            Self::ACPI_NVS => write!(f, "ACPI_NVS"),
+            Self::BAD_MEMORY => write!(f, "BAD_MEMORY"),
+            Self::BOOTLOADER_RECLAIMABLE => write!(f, "BOOTLOADER_RECLAIMABLE"),
+            Self::KERNEL_AND_MODULES => write!(f, "KERNEL_AND_MODULES"),
+            Self::FRAMEBUFFER => write!(f, "FRAMEBUFFER"),
+            _ => write!(f, "EntryType({})", self.0),
+        }
+    }
+}
 
 /// A memory map entry.
 #[repr(C)]
@@ -41,4 +58,13 @@ pub struct Entry {
     pub length: u64,
     /// The type of the memory region. See [`EntryType`] for specific values.
     pub entry_type: EntryType,
+}
+impl Debug for Entry {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Entry")
+            .field("base", &format_args!("{:#x}", self.base))
+            .field("length", &self.length)
+            .field("entry_type", &self.entry_type)
+            .finish()
+    }
 }

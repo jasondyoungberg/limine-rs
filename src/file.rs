@@ -2,6 +2,7 @@
 
 use core::{
     ffi::{c_char, c_void, CStr},
+    fmt::Debug,
     mem::MaybeUninit,
     num::NonZeroU32,
 };
@@ -45,6 +46,26 @@ impl From<Uuid> for uuid::Uuid {
         Self::from_fields(uuid.a, uuid.b, uuid.c, &uuid.d)
     }
 }
+impl Debug for Uuid {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_tuple("Uuid")
+            .field(&format_args!(
+                "{:08x}-{:04x}-{:04x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+                self.a,
+                self.b,
+                self.c,
+                self.d[0],
+                self.d[1],
+                self.d[2],
+                self.d[3],
+                self.d[4],
+                self.d[5],
+                self.d[6],
+                self.d[7]
+            ))
+            .finish()
+    }
+}
 
 /// A media type for a file.
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -57,6 +78,16 @@ impl MediaType {
     pub const OPTICAL: Self = Self(1);
     /// A TFTP server.
     pub const TFTP: Self = Self(2);
+}
+impl Debug for MediaType {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match *self {
+            Self::GENERIC => write!(f, "GENERIC"),
+            Self::OPTICAL => write!(f, "OPTICAL"),
+            Self::TFTP => write!(f, "TFTP"),
+            _ => write!(f, "MediaType({})", self.0),
+        }
+    }
 }
 
 /// A file loaded by the bootloader. Returned from
@@ -168,5 +199,32 @@ impl File {
     /// with a UUID.
     pub fn partition_uuid(&self) -> Option<Uuid> {
         self.partition_uuid.non_zero()
+    }
+}
+impl Debug for File {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut x = f.debug_struct("File");
+        x.field("revision", &self.revision());
+        x.field("addr", &self.addr());
+        x.field("size", &self.size());
+
+        match core::str::from_utf8(self.path()) {
+            Ok(path) => x.field("path", &path),
+            Err(_) => x.field("path", &self.path()),
+        };
+
+        x.field("cmdline", &self.cmdline());
+        x.field("media_type", &self.media_type());
+        #[cfg(feature = "ipaddr")]
+        x.field("tftp_ip", &self.tftp_addr());
+        #[cfg(not(feature = "ipaddr"))]
+        x.field("tftp_ip", &self.tftp_ip());
+        x.field("tftp_port", &self.tftp_port());
+        x.field("partition_idx", &self.partition_idx());
+        x.field("mbr_disk_id", &self.mbr_disk_id());
+        x.field("gpt_disk_id", &self.gpt_disk_id());
+        x.field("gpt_partition_id", &self.gpt_partition_id());
+        x.field("partition_uuid", &self.partition_uuid());
+        x.finish()
     }
 }

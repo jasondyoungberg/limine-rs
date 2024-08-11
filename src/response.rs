@@ -2,6 +2,7 @@
 
 use core::{
     ffi::{c_char, c_void, CStr},
+    fmt::Debug,
     ptr::NonNull,
     time::Duration,
 };
@@ -46,6 +47,15 @@ impl BootloaderInfoResponse {
         unsafe { CStr::from_ptr(self.version) }.to_str().unwrap()
     }
 }
+impl Debug for BootloaderInfoResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("BootloaderInfoResponse")
+            .field("revision", &self.revision())
+            .field("name", &self.name())
+            .field("version", &self.version())
+            .finish()
+    }
+}
 
 /// A response to a [stack size request](crate::request::StackSizeRequest). This
 /// response has no fields. If it is provided, the bootloader complied with the
@@ -56,6 +66,13 @@ pub struct StackSizeResponse {
 }
 impl StackSizeResponse {
     impl_base_fns!();
+}
+impl Debug for StackSizeResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("StackSizeResponse")
+            .field("revision", &self.revision())
+            .finish()
+    }
 }
 
 /// A response to a [higher-half direct map
@@ -95,6 +112,14 @@ impl HhdmResponse {
         self.offset
     }
 }
+impl Debug for HhdmResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("HhdmResponse")
+            .field("revision", &self.revision())
+            .field("offset", &format_args!("{:#x}", &self.offset()))
+            .finish()
+    }
+}
 
 /// A response to a [framebuffer request](crate::request::FramebufferRequest).
 #[repr(C)]
@@ -114,6 +139,20 @@ impl FramebufferResponse {
         (unsafe { core::slice::from_raw_parts(self.framebuffers, self.framebuffer_ct as usize) })
             .iter()
             .map(|&fb| Framebuffer::new(self.revision, unsafe { &*fb }))
+    }
+}
+impl Debug for FramebufferResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("FramebufferResponse")
+            .field("revision", &self.revision())
+            .field("framebuffers", &FramebuffersDebugHelper(self))
+            .finish()
+    }
+}
+struct FramebuffersDebugHelper<'a>(&'a FramebufferResponse);
+impl Debug for FramebuffersDebugHelper<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_list().entries(self.0.framebuffers()).finish()
     }
 }
 
@@ -138,6 +177,15 @@ impl PagingModeResponse {
         self.flags
     }
 }
+impl Debug for PagingModeResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("PagingModeResponse")
+            .field("revision", &self.revision())
+            .field("mode", &self.mode())
+            .field("flags", &self.flags())
+            .finish()
+    }
+}
 
 /// **This request is deprecated and was removed from the reference
 /// implementation. Use [`PagingModeRequest`](crate::request::PagingModeRequest)
@@ -152,6 +200,13 @@ pub struct FiveLevelPagingResponse {
 }
 impl FiveLevelPagingResponse {
     impl_base_fns!();
+}
+impl Debug for FiveLevelPagingResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("FiveLevelPagingResponse")
+            .field("revision", &self.revision())
+            .finish()
+    }
 }
 
 /// A response to a [smp request](crate::request::SmpRequest). This response
@@ -214,6 +269,21 @@ impl SmpResponse {
         unsafe { core::slice::from_raw_parts_mut(self.cpus.cast(), self.cpu_ct as usize) }
     }
 }
+impl Debug for SmpResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut x = f.debug_struct("SmpResponse");
+        x.field("revision", &self.revision());
+        x.field("flags", &self.flags());
+        #[cfg(target_arch = "x86_64")]
+        x.field("bsp_lapic_id", &self.bsp_lapic_id());
+        #[cfg(target_arch = "aarch64")]
+        x.field("bsp_mpidr", &self.bsp_mpidr());
+        #[cfg(target_arch = "riscv64")]
+        x.field("bsp_hartid", &self.bsp_hartid());
+        x.field("cpus", &self.cpus());
+        x.finish()
+    }
+}
 
 /// A response to a [memory map request](crate::request::MemoryMapRequest).
 #[repr(C)]
@@ -241,6 +311,14 @@ impl MemoryMapResponse {
         unsafe { core::slice::from_raw_parts_mut(self.entries.cast(), self.entry_ct as usize) }
     }
 }
+impl Debug for MemoryMapResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("MemoryMapResponse")
+            .field("revision", &self.revision())
+            .field("entries", &self.entries())
+            .finish()
+    }
+}
 
 /// A response to a [kernel file request](crate::request::KernelFileRequest).
 #[repr(C)]
@@ -249,6 +327,13 @@ pub struct EntryPointResponse {
 }
 impl EntryPointResponse {
     impl_base_fns!();
+}
+impl Debug for EntryPointResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("EntryPointResponse")
+            .field("revision", &self.revision())
+            .finish()
+    }
 }
 
 /// A response to a [kernel file request](crate::request::KernelFileRequest).
@@ -265,6 +350,14 @@ impl KernelFileResponse {
     /// Returns the kernel file. See [`File`](file::File) for more information.
     pub fn file(&self) -> &file::File {
         unsafe { &*self.file }
+    }
+}
+impl Debug for KernelFileResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("KernelFileResponse")
+            .field("revision", &self.revision())
+            .field("file", &self.file())
+            .finish()
     }
 }
 
@@ -286,6 +379,14 @@ impl ModuleResponse {
         unsafe { core::slice::from_raw_parts(self.modules.cast(), self.module_ct as usize) }
     }
 }
+impl Debug for ModuleResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("ModuleResponse")
+            .field("revision", &self.revision())
+            .field("modules", &self.modules())
+            .finish()
+    }
+}
 
 /// A response to a [rsdp request](crate::request::RsdpRequest).
 #[repr(C)]
@@ -301,6 +402,14 @@ impl RsdpResponse {
     /// Returns the address of the RSDP table in the ACPI.
     pub fn address(&self) -> *const () {
         self.address.cast()
+    }
+}
+impl Debug for RsdpResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("RsdpResponse")
+            .field("revision", &self.revision())
+            .field("address", &self.address())
+            .finish()
     }
 }
 
@@ -325,6 +434,15 @@ impl SmbiosResponse {
         self.entry_64
     }
 }
+impl Debug for SmbiosResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("SmbiosResponse")
+            .field("revision", &self.revision())
+            .field("entry_32", &self.entry_32())
+            .field("entry_64", &self.entry_64())
+            .finish()
+    }
+}
 
 /// A response to a [system table request](crate::request::EfiSystemTableRequest).
 #[repr(C)]
@@ -340,6 +458,14 @@ impl EfiSystemTableResponse {
     /// Returns the address of the EFI system table.
     pub fn address(&self) -> *const () {
         self.address.cast()
+    }
+}
+impl Debug for EfiSystemTableResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("EfiSystemTableResponse")
+            .field("revision", &self.revision())
+            .field("address", &self.address())
+            .finish()
     }
 }
 
@@ -375,6 +501,17 @@ impl EfiMemoryMapResponse {
         self.desc_version
     }
 }
+impl Debug for EfiMemoryMapResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("EfiMemoryMapResponse")
+            .field("revision", &self.revision())
+            .field("memmap", &self.memmap())
+            .field("memmap_size", &self.memmap_size())
+            .field("desc_size", &self.desc_size())
+            .field("desc_version", &self.desc_version())
+            .finish()
+    }
+}
 
 /// A response to a [boot time request](crate::request::BootTimeRequest).
 #[repr(C)]
@@ -388,6 +525,14 @@ impl BootTimeResponse {
     /// Returns the boot time in seconds, as read from the system RTC.
     pub fn boot_time(&self) -> Duration {
         Duration::from_secs(self.boot_time as u64)
+    }
+}
+impl Debug for BootTimeResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("BootTimeResponse")
+            .field("revision", &self.revision())
+            .field("boot_time", &self.boot_time())
+            .finish()
     }
 }
 
@@ -419,6 +564,18 @@ impl KernelAddressResponse {
         self.virtual_base
     }
 }
+impl Debug for KernelAddressResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("KernelAddressResponse")
+            .field("revision", &self.revision())
+            .field(
+                "physical_base",
+                &format_args!("{:#x}", &self.physical_base()),
+            )
+            .field("virtual_base", &format_args!("{:#x}", &self.virtual_base()))
+            .finish()
+    }
+}
 
 /// A response to a [device tree blob request](crate::request::DeviceTreeBlobRequest).
 #[repr(C)]
@@ -434,5 +591,13 @@ impl DeviceTreeBlobResponse {
     /// Returns the address of the device tree blob.
     pub fn dtb_ptr(&self) -> *const () {
         self.dtb_ptr.cast()
+    }
+}
+impl Debug for DeviceTreeBlobResponse {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("DeviceTreeBlobResponse")
+            .field("revision", &self.revision())
+            .field("dtb_ptr", &self.dtb_ptr())
+            .finish()
     }
 }
