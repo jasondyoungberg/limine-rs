@@ -24,8 +24,8 @@ impl GotoAddress {
 pub struct Cpu {
     /// The ACPI processor ID, according to the ACPI MADT.
     #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
-    /// The ACPI processor ID, according to the ACPI MADT.
     pub id: u32,
+    /// The ACPI processor ID, according to the ACPI MADT.
     #[cfg(target_arch = "riscv64")]
     pub id: u64,
 
