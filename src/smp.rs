@@ -24,23 +24,23 @@ impl GotoAddress {
 pub struct Cpu {
     /// The ACPI processor ID, according to the ACPI MADT.
     #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
-    pub id: u32,
     /// The ACPI processor ID, according to the ACPI MADT.
+    pub id: u32,
     #[cfg(target_arch = "riscv64")]
     pub id: u64,
 
-    #[cfg(target_arch = "x86_64")]
     /// The APIC ID, according to the ACPI MADT.
+    #[cfg(target_arch = "x86_64")]
     pub lapic_id: u32,
 
     #[cfg(target_arch = "aarch64")]
     _reserved1: core::mem::MaybeUninit<u32>,
-    #[cfg(target_arch = "aarch64")]
     /// The MPIDR of the CPU, according to the ACPI MADT or the device tree.
+    #[cfg(target_arch = "aarch64")]
     pub mpidr: u64,
 
-    #[cfg(target_arch = "riscv64")]
     /// The hart ID, according to the ACPI MADT or the device tree.
+    #[cfg(target_arch = "riscv64")]
     pub hartid: u64,
 
     _reserved: core::mem::MaybeUninit<u64>,
