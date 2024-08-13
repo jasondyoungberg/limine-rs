@@ -1,5 +1,7 @@
 //! Auxiliary types for the [memory map request](crate::request::MemoryMapRequest)
 
+use core::fmt::Debug;
+
 /// A type of entry within the memory map.
 #[repr(transparent)]
 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -29,6 +31,22 @@ impl EntryType {
 impl From<u64> for EntryType {
     fn from(val: u64) -> Self {
         Self(val)
+    }
+}
+
+impl Debug for EntryType {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match *self {
+            EntryType::USABLE => write!(f, "Usable"),
+            EntryType::RESERVED => write!(f, "Reserved"),
+            EntryType::ACPI_RECLAIMABLE => write!(f, "ACPI Reclaimable"),
+            EntryType::ACPI_NVS => write!(f, "ACPI NVS"),
+            EntryType::BAD_MEMORY => write!(f, "Bad Memory"),
+            EntryType::BOOTLOADER_RECLAIMABLE => write!(f, "Bootloader Reclaimable"),
+            EntryType::KERNEL_AND_MODULES => write!(f, "Kernel and Modules"),
+            EntryType::FRAMEBUFFER => write!(f, "Framebuffer"),
+            _ => unreachable!(),
+        }
     }
 }
 
