@@ -1,3 +1,8 @@
+# 0.3.0
+* Bump MSRV from 1.64 to 1.77.
+* Remove deprecated `FiveLevelPagingRequest`.
+* Add missing Limine Boot Protocol requests.
+
 # 0.2.0 **BREAKING CHANGES**
 * Complete rewrite.
 * Removed limine-proc.
