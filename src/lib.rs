@@ -37,7 +37,7 @@
 //! ```rust
 //! use limine::BaseRevision;
 //!
-//! // Require version 1 or higher
+//! // Require version 2 or higher
 //! pub static BASE_REVISION: BaseRevision = BaseRevision::new();
 //! ```
 //!
@@ -59,6 +59,7 @@
 use core::cell::UnsafeCell;
 
 pub mod file;
+pub mod firmware_type;
 pub mod framebuffer;
 pub mod memory_map;
 pub mod modules;
@@ -71,7 +72,7 @@ pub mod smp;
 /// kernel in order to require a higher revision. Without this tag, the
 /// bootloader will assume revision 0.
 ///
-/// The latest revision is 1.
+/// The latest revision is 2.
 #[repr(C)]
 pub struct BaseRevision {
     _id: [u64; 2],
@@ -80,7 +81,7 @@ pub struct BaseRevision {
 impl BaseRevision {
     /// Create a new base revision tag with the latest revision.
     pub const fn new() -> Self {
-        Self::with_revision(1)
+        Self::with_revision(2)
     }
 
     /// Create a new base revision tag with the given revision.
