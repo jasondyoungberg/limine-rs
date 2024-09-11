@@ -99,3 +99,10 @@ impl BaseRevision {
 }
 unsafe impl Sync for BaseRevision {}
 unsafe impl Send for BaseRevision {}
+
+#[cfg(not(any(
+    target_arch = "x86_64",
+    target_arch = "aarch64",
+    target_arch = "riscv64"
+)))]
+compile_error!("Unsupported architecture, please use `x86_64`, `aarch64`, or `riscv64`");
