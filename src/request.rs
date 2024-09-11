@@ -468,7 +468,7 @@ impl EntryPointRequest {
     }
 }
 
-/// Request information about the loaded kernel file. See [`File`](file::File)
+/// Request information about the loaded kernel file. See [`File`](crate::file::File)
 /// for more information.
 ///
 /// # Usage
@@ -499,7 +499,7 @@ impl KernelFileRequest {
     );
 }
 
-/// Request information about the loaded modules. See [`File`](file::File) for
+/// Request information about the loaded modules. See [`File`](crate::file::File) for
 /// more information.
 ///
 /// Additionally, with revision 1, this request can be used to specify
