@@ -16,16 +16,17 @@ jobs:
     - uses: actions/checkout@v2
     - uses: dtolnay/rust-toolchain@nightly
       with:
-        targets: x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu, riscv64gc-unknown-linux-gnu
         components: rustfmt, clippy
+    - name: Install Targets
+      run: rustup target add x86_64-unknown-none aarch64-unknown-none riscv64gc-unknown-none-elf
     - name: Rust Version
       run: rustup --version && rustc --version
     - name: Run clippy x86_64
-      run: cargo clippy --verbose --target x86_64-unknown-linux-gnu --all-features -- -D warnings
+      run: cargo clippy --verbose --target x86_64-unknown-none --all-features -- -D warnings
     - name: Run clippy aarch64
-      run: cargo clippy --verbose --target aarch64-unknown-linux-gnu --all-features -- -D warnings
+      run: cargo clippy --verbose --target aarch64-unknown-none --all-features -- -D warnings
     - name: Run clippy riscv64
-      run: cargo clippy --verbose --target riscv64gc-unknown-linux-gnu --all-features -- -D warnings
+      run: cargo clippy --verbose --target riscv64gc-unknown-none-elf --all-features -- -D warnings
     - name: Reformat code
       uses: mbrobbel/rustfmt-check@master
       with:
