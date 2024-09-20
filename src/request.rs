@@ -75,6 +75,40 @@ macro_rules! magic {
     };
 }
 
+/// Marks the begining of the requests section
+#[repr(transparent)]
+pub struct RequestsStartMarker {
+    id: [u64; 4],
+}
+impl RequestsStartMarker {
+    /// Create a new request start marker
+    pub const fn new() -> Self {
+        Self {
+            id: [
+                0xf6b8f4b39de7d1ae,
+                0xfab91a6940fcb9cf,
+                0x785c6ed015d3e316,
+                0x181e920a7852b9d9,
+            ],
+        }
+    }
+}
+
+/// Marks the end of the requests section
+#[repr(transparent)]
+pub struct RequestsEndMarker {
+    id: [u64; 2],
+}
+impl RequestsEndMarker {
+    /// Create a new request end marker
+    pub const fn new() -> Self {
+        Self {
+            id: [0xadc0e0531bb10d03, 0x9572709f31764c62],
+        }
+    }
+}
+
+#[repr(transparent)]
 struct Response<T> {
     inner: UnsafeCell<Option<NonNull<T>>>,
 }
