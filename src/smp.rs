@@ -47,8 +47,10 @@ pub struct Cpu {
     /// The address to jump to. Writing to this field will cause the core to
     /// jump to the given function. The function will receive a pointer to this
     /// structure, and it will have its own 64KiB (or requested-size) stack.
+    #[cfg(not(target_arch = "loongarch64"))]
     pub goto_address: GotoAddress,
     /// Free for use by the kernel.
+    #[cfg(not(target_arch = "loongarch64"))]
     pub extra: u64,
 }
 
@@ -73,7 +75,7 @@ bitflags! {
     }
 }
 
-#[cfg(any(target_arch = "aarch64", target_arch = "riscv64"))]
+#[cfg(not(target_arch = "x86_64"))]
 bitflags! {
     /// Flags for the [SMP response](crate::response::SmpResponse).
     #[derive(Default, Clone, Copy)]

@@ -155,6 +155,7 @@ impl PagingModeResponse {
 #[repr(C)]
 pub struct SmpResponse {
     revision: u64,
+    #[cfg(not(target_arch = "loongarch64"))]
     flags: smp::ResponseFlags,
     #[cfg(target_arch = "x86_64")]
     bsp_lapic_id: u32,
@@ -172,6 +173,7 @@ impl SmpResponse {
 
     /// Returns the flags that were enabled by the bootloader. See
     /// [`ResponseFlags`](smp::ResponseFlags) for more information.
+    #[cfg(not(target_arch = "loongarch64"))]
     pub fn flags(&self) -> smp::ResponseFlags {
         self.flags
     }
