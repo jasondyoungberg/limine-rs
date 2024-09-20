@@ -1,3 +1,8 @@
+# 0.3.1
+* Add `RequestsStartMarker` and `RequestsEndMarker`
+* Add support for loongarch64
+* **FIX**: Added missing `#[repr(transparent)]` to `Response`
+
 # 0.3.0
 * Bump MSRV from 1.64 to 1.77.
 * Remove deprecated `FiveLevelPagingRequest`.
