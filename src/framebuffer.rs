@@ -1,6 +1,10 @@
 //! Auxiliary types for the [framebuffer request](crate::request::FramebufferRequest)
 
-use core::{ffi::c_void, ptr::NonNull};
+use core::{
+    ffi::c_void,
+    marker::{Send, Sync},
+    ptr::NonNull,
+};
 
 #[derive(Clone, Copy)]
 #[repr(C)]
@@ -186,3 +190,5 @@ impl<'a> Framebuffer<'a> {
         }
     }
 }
+unsafe impl Send for Framebuffer {}
+unsafe impl Sync for Framebuffer {}
