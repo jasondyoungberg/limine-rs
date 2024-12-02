@@ -17,17 +17,6 @@ bitflags! {
     }
 }
 
-/// Create a NUL-terminated C string from a string literal
-#[macro_export]
-macro_rules! cstr {
-    () => {
-        unsafe { core::ffi::CStr::from_bytes_with_nul_unchecked(b"\0") }
-    };
-    ($s:expr) => {
-        unsafe { core::ffi::CStr::from_bytes_with_nul_unchecked(concat!($s, "\0").as_bytes()) }
-    };
-}
-
 /// An internal module that the kernel requests from the bootloader. Only
 /// available with request revision 1 and greater.
 #[repr(C)]
