@@ -72,7 +72,7 @@ pub mod smp;
 /// kernel in order to require a higher revision. Without this tag, the
 /// bootloader will assume revision 0.
 ///
-/// The latest revision is 2.
+/// The latest revision is 3.
 #[repr(C)]
 pub struct BaseRevision {
     _id: [u64; 2],
@@ -81,7 +81,7 @@ pub struct BaseRevision {
 impl BaseRevision {
     /// Create a new base revision tag with the latest revision.
     pub const fn new() -> Self {
-        Self::with_revision(2)
+        Self::with_revision(3)
     }
 
     /// Create a new base revision tag with the given revision.
