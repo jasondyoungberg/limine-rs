@@ -12,6 +12,8 @@ impl FirmwareType {
     pub const UEFI_32: Self = Self(1);
     /// The firmware type is 64-bit UEFI.
     pub const UEFI_64: Self = Self(2);
+    /// The firmware type is SBI
+    pub const SBI: Self = Self(3);
 }
 impl From<u64> for FirmwareType {
     fn from(value: u64) -> Self {

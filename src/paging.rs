@@ -20,8 +20,6 @@ impl Mode {
 
     /// The default paging mode.
     pub const DEFAULT: Self = Self::FOUR_LEVEL;
-    /// The maximum supported paging mode.
-    pub const MAX: Self = Self::FIVE_LEVEL;
     /// The minimum supported paging mode.
     pub const MIN: Self = Self::FOUR_LEVEL;
 }

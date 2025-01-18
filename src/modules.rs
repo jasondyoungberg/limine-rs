@@ -29,7 +29,7 @@ macro_rules! cstr {
     };
 }
 
-/// An internal module that the kernel requests from the bootloader. Only
+/// An internal module that the executable requests from the bootloader. Only
 /// available with request revision 1 and greater.
 #[repr(C)]
 pub struct InternalModule {

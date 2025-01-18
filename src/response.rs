@@ -2,7 +2,7 @@
 
 use core::{
     ffi::{c_char, c_void, CStr},
-    ptr::NonNull,
+    num::NonZeroUsize,
     time::Duration,
 };
 
@@ -10,9 +10,8 @@ use crate::{
     file,
     firmware_type::FirmwareType,
     framebuffer::{Framebuffer, RawFramebuffer},
-    memory_map,
+    memory_map, mp,
     paging::Mode,
-    smp,
 };
 
 macro_rules! impl_base_fns {
@@ -107,7 +106,7 @@ impl HhdmResponse {
     ///   direct map already. This is true of any virtual address returned in
     ///   any response. However, this is not true of addresses within executable
     ///   code. To convert an address within executable code, you must use the
-    ///   [kernel address request](crate::request::KernelAddressRequest).
+    ///   [executable address request](crate::request::ExecutableAddressRequest).
     pub fn offset(&self) -> u64 {
         self.offset
     }
@@ -150,13 +149,14 @@ impl PagingModeResponse {
     }
 }
 
-/// A response to a [smp request](crate::request::SmpRequest). This response
+/// A response to a [mp request](crate::request::MpRequest). This response
 /// contains information about the boot processor and all other processors.
 #[repr(C)]
-pub struct SmpResponse {
+pub struct MpResponse {
+    #[cfg(not(target_arch = "loongarch64"))]
     revision: u64,
     #[cfg(not(target_arch = "loongarch64"))]
-    flags: smp::ResponseFlags,
+    flags: mp::ResponseFlags,
     #[cfg(target_arch = "x86_64")]
     bsp_lapic_id: u32,
     #[cfg(target_arch = "aarch64")]
@@ -164,17 +164,18 @@ pub struct SmpResponse {
     #[cfg(target_arch = "riscv64")]
     bsp_hartid: u64,
     cpu_ct: u64,
-    cpus: *mut *mut smp::Cpu,
+    cpus: *mut *mut mp::Cpu,
 }
-unsafe impl Sync for SmpResponse {}
-unsafe impl Send for SmpResponse {}
-impl SmpResponse {
+unsafe impl Sync for MpResponse {}
+unsafe impl Send for MpResponse {}
+impl MpResponse {
+    #[cfg(not(target_arch = "loongarch64"))]
     impl_base_fns!();
 
     /// Returns the flags that were enabled by the bootloader. See
-    /// [`ResponseFlags`](smp::ResponseFlags) for more information.
+    /// [`ResponseFlags`](mp::ResponseFlags) for more information.
     #[cfg(not(target_arch = "loongarch64"))]
-    pub fn flags(&self) -> smp::ResponseFlags {
+    pub fn flags(&self) -> mp::ResponseFlags {
         self.flags
     }
 
@@ -199,16 +200,16 @@ impl SmpResponse {
         self.bsp_hartid
     }
 
-    /// Returns a slice of found CPUs. See [`Cpu`](smp::Cpu) for more information.
-    pub fn cpus(&self) -> &[&smp::Cpu] {
+    /// Returns a slice of found CPUs. See [`Cpu`](mp::Cpu) for more information.
+    pub fn cpus(&self) -> &[&mp::Cpu] {
         unsafe { core::slice::from_raw_parts(self.cpus.cast(), self.cpu_ct as usize) }
     }
 
-    /// Returns a mutable slice of found CPUs. See [`Cpu`](smp::Cpu) for more information.
+    /// Returns a mutable slice of found CPUs. See [`Cpu`](mp::Cpu) for more information.
     /// Note that this function takes `&mut self`, so the response will likely
     /// need to be wrapped in a `Mutex` or similar. It is provided so that the
     /// `extra` field on each CPU can be set.
-    pub fn cpus_mut(&mut self) -> &mut [&mut smp::Cpu] {
+    pub fn cpus_mut(&mut self) -> &mut [&mut mp::Cpu] {
         unsafe { core::slice::from_raw_parts_mut(self.cpus.cast(), self.cpu_ct as usize) }
     }
 }
@@ -240,7 +241,7 @@ impl MemoryMapResponse {
     }
 }
 
-/// A response to a [kernel file request](crate::request::KernelFileRequest).
+/// A response to a [executable file request](crate::request::ExecutableFileRequest).
 #[repr(C)]
 pub struct EntryPointResponse {
     revision: u64,
@@ -249,18 +250,18 @@ impl EntryPointResponse {
     impl_base_fns!();
 }
 
-/// A response to a [kernel file request](crate::request::KernelFileRequest).
+/// A response to a [executable file request](crate::request::ExecutableFileRequest).
 #[repr(C)]
-pub struct KernelFileResponse {
+pub struct ExecutableFileResponse {
     revision: u64,
     file: *const file::File,
 }
-unsafe impl Sync for KernelFileResponse {}
-unsafe impl Send for KernelFileResponse {}
-impl KernelFileResponse {
+unsafe impl Sync for ExecutableFileResponse {}
+unsafe impl Send for ExecutableFileResponse {}
+impl ExecutableFileResponse {
     impl_base_fns!();
 
-    /// Returns the kernel file. See [`File`](file::File) for more information.
+    /// Returns the executable file. See [`File`](file::File) for more information.
     pub fn file(&self) -> &file::File {
         unsafe { &*self.file }
     }
@@ -289,7 +290,7 @@ impl ModuleResponse {
 #[repr(C)]
 pub struct RsdpResponse {
     revision: u64,
-    address: *const c_void,
+    address: usize,
 }
 unsafe impl Sync for RsdpResponse {}
 unsafe impl Send for RsdpResponse {}
@@ -297,8 +298,8 @@ impl RsdpResponse {
     impl_base_fns!();
 
     /// Returns the address of the RSDP table in the ACPI.
-    pub fn address(&self) -> *const () {
-        self.address.cast()
+    pub fn address(&self) -> usize {
+        self.address
     }
 }
 
@@ -306,8 +307,8 @@ impl RsdpResponse {
 #[repr(C)]
 pub struct SmbiosResponse {
     revision: u64,
-    entry_32: Option<NonNull<c_void>>,
-    entry_64: Option<NonNull<c_void>>,
+    entry_32: Option<NonZeroUsize>,
+    entry_64: Option<NonZeroUsize>,
 }
 unsafe impl Sync for SmbiosResponse {}
 unsafe impl Send for SmbiosResponse {}
@@ -315,11 +316,11 @@ impl SmbiosResponse {
     impl_base_fns!();
 
     /// Returns the address of the SMBIOS 32-bit entry point, if it exists.
-    pub fn entry_32(&self) -> Option<NonNull<c_void>> {
+    pub fn entry_32(&self) -> Option<NonZeroUsize> {
         self.entry_32
     }
     /// Returns the address of the SMBIOS 64-bit entry point, if it exists.
-    pub fn entry_64(&self) -> Option<NonNull<c_void>> {
+    pub fn entry_64(&self) -> Option<NonZeroUsize> {
         self.entry_64
     }
 }
@@ -328,7 +329,7 @@ impl SmbiosResponse {
 #[repr(C)]
 pub struct EfiSystemTableResponse {
     revision: u64,
-    address: *const c_void,
+    address: usize,
 }
 unsafe impl Sync for EfiSystemTableResponse {}
 unsafe impl Send for EfiSystemTableResponse {}
@@ -336,8 +337,8 @@ impl EfiSystemTableResponse {
     impl_base_fns!();
 
     /// Returns the address of the EFI system table.
-    pub fn address(&self) -> *const () {
-        self.address.cast()
+    pub fn address(&self) -> usize {
+        self.address
     }
 }
 
@@ -389,9 +390,9 @@ impl BootTimeResponse {
     }
 }
 
-/// A response to a [kernel address request](crate::request::KernelAddressRequest).
+/// A response to a [executable address request](crate::request::ExecutableAddressRequest).
 ///
-/// This can be used to convert a virtual address within the kernel to a
+/// This can be used to convert a virtual address within the executable to a
 /// physical address like so:
 /// ```rust
 /// # let virt_addr = 42;
@@ -400,19 +401,19 @@ impl BootTimeResponse {
 /// let phys_addr = virt_addr - virtual_base + physical_base;
 /// ````
 #[repr(C)]
-pub struct KernelAddressResponse {
+pub struct ExecutableAddressResponse {
     revision: u64,
     physical_base: u64,
     virtual_base: u64,
 }
-impl KernelAddressResponse {
+impl ExecutableAddressResponse {
     impl_base_fns!();
 
-    /// Returns the base address of the kernel in physical memory.
+    /// Returns the base address of the executable in physical memory.
     pub fn physical_base(&self) -> u64 {
         self.physical_base
     }
-    /// Returns the base address of the kernel in virtual memory.
+    /// Returns the base address of the executable in virtual memory.
     pub fn virtual_base(&self) -> u64 {
         self.virtual_base
     }
@@ -432,5 +433,23 @@ impl DeviceTreeBlobResponse {
     /// Returns the address of the device tree blob.
     pub fn dtb_ptr(&self) -> *const () {
         self.dtb_ptr.cast()
+    }
+}
+
+/// A response to a [bsp hardid request](crate::request::BspHartidRequest).
+#[cfg(target_arch = "riscv64")]
+#[repr(C)]
+pub struct BspHartidResponse {
+    revision: u64,
+    bsp_hartid: u64,
+}
+#[cfg(target_arch = "riscv64")]
+impl BspHartidResponse {
+    impl_base_fns!();
+
+    /// Get the Hard ID of the boot processor.
+    /// This is the same as [MpResponse::bsp_hartid], but doesn't boot up the other APs
+    pub fn bsp_hartid(&self) -> u64 {
+        self.bsp_hartid
     }
 }

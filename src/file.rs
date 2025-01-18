@@ -60,7 +60,7 @@ impl MediaType {
 }
 
 /// A file loaded by the bootloader. Returned from
-/// [`KernelFileRequest`](crate::request::KernelFileRequest) and
+/// [`ExecutableFileRequest`](crate::request::ExecutableFileRequest) and
 /// [`ModuleRequest`](crate::request::ModuleRequest).
 #[repr(C)]
 pub struct File {

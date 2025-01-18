@@ -2,7 +2,7 @@
 
 use core::{cell::UnsafeCell, ptr::NonNull};
 
-use crate::{modules::InternalModule, paging, response::*, smp};
+use crate::{modules::InternalModule, mp, paging, response::*};
 
 macro_rules! impl_base_fns {
     ($latest_revision:expr, $response:ty, $magic:expr, { $($(#[$attr:meta])* $field:ident: $val:expr),* $(,)? }) => {
@@ -383,46 +383,46 @@ impl PagingModeRequest {
 ///
 /// # Usage
 /// ```rust
-/// # use limine::{request::SmpRequest, response::SmpResponse, BaseRevision};
+/// # use limine::{request::MpRequest, response::MpResponse, BaseRevision};
 /// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request that all other cores be started
-/// static SMP_REQUEST: SmpRequest = SmpRequest::new();
+/// static MP_REQUEST: MpRequest = MpRequest::new();
 ///
-/// # fn dummy<'a>() -> Option<&'a SmpResponse> {
+/// # fn dummy<'a>() -> Option<&'a MpResponse> {
 /// // ...later, in our code
-/// SMP_REQUEST.get_response() // ...
+/// MP_REQUEST.get_response() // ...
 /// # }
 /// ```
 #[repr(C)]
-pub struct SmpRequest {
+pub struct MpRequest {
     id: [u64; 4],
     revision: u64,
-    response: Response<SmpResponse>,
-    flags: smp::RequestFlags,
+    response: Response<MpResponse>,
+    flags: mp::RequestFlags,
 }
-impl SmpRequest {
+impl MpRequest {
     impl_base_fns!(
         0,
-        SmpResponse,
+        MpResponse,
         magic!(0x95a67b819a1b857e, 0xa0b61b723b6a73e0),
         {
-            flags: smp::RequestFlags::empty(),
+            flags: mp::RequestFlags::empty(),
         }
     );
 
     setter!(
-        /// Set the SMP request flags. See [`RequestFlags`](smp::RequestFlags)
+        /// Set the MP request flags. See [`RequestFlags`](mp::RequestFlags)
         /// for more information.
-        smp::RequestFlags,
+        mp::RequestFlags,
         set_flags,
         with_flags,
         flags
     );
 
-    /// Get the SMP request flags. See [`RequestFlags`](smp::RequestFlags) for
+    /// Get the MP request flags. See [`RequestFlags`](mp::RequestFlags) for
     /// more information.
-    pub fn flags(&self) -> smp::RequestFlags {
+    pub fn flags(&self) -> mp::RequestFlags {
         self.flags
     }
 }
@@ -462,7 +462,7 @@ impl MemoryMapRequest {
     );
 }
 
-/// Requests limine to use a specific function as the kernel entry point,
+/// Requests limine to use a specific function as the executable entry point,
 /// instead of the one specified in the ELF.
 #[repr(C)]
 pub struct EntryPointRequest {
@@ -502,32 +502,32 @@ impl EntryPointRequest {
     }
 }
 
-/// Request information about the loaded kernel file. See [`File`](crate::file::File)
+/// Request information about the loaded executable file. See [`File`](crate::file::File)
 /// for more information.
 ///
 /// # Usage
 /// ```rust
-/// # use limine::{request::KernelFileRequest, response::KernelFileResponse, BaseRevision};
+/// # use limine::{request::ExecutableFileRequest, response::ExecutableFileResponse, BaseRevision};
 /// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
-/// // Request information about the kernel file
-/// static KERNEL_FILE_REQUEST: KernelFileRequest = KernelFileRequest::new();
+/// // Request information about the executable file
+/// static EXECUTABLE_FILE_REQUEST: ExecutableFileRequest = ExecutableFileRequest::new();
 ///
-/// # fn dummy<'a>() -> Option<&'a KernelFileResponse> {
+/// # fn dummy<'a>() -> Option<&'a ExecutableFileResponse> {
 /// // ...later, in our code
-/// KERNEL_FILE_REQUEST.get_response() // ...
+/// EXECUTABLE_FILE_REQUEST.get_response() // ...
 /// # }
 /// ```
 #[repr(C)]
-pub struct KernelFileRequest {
+pub struct ExecutableFileRequest {
     id: [u64; 4],
     revision: u64,
-    response: Response<KernelFileResponse>,
+    response: Response<ExecutableFileResponse>,
 }
-impl KernelFileRequest {
+impl ExecutableFileRequest {
     impl_base_fns!(
         0,
-        KernelFileResponse,
+        ExecutableFileResponse,
         magic!(0xad97e90e83f1ed67, 0x31eb5d1c5ff23b69),
         {}
     );
@@ -768,31 +768,31 @@ impl BootTimeRequest {
     );
 }
 
-/// Request the base address of the kernel code, in virtual and physical space.
+/// Request the base address of the executable code, in virtual and physical space.
 ///
 /// # Usage
 /// ```rust
-/// # use limine::{request::KernelAddressRequest, response::KernelAddressResponse, BaseRevision};
+/// # use limine::{request::ExecutableAddressRequest, response::ExecutableAddressResponse, BaseRevision};
 /// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
-/// // Request the kernel address
-/// static KERNEL_ADDRESS_REQUEST: KernelAddressRequest = KernelAddressRequest::new();
+/// // Request the executable address
+/// static EXECUTABLE_ADDRESS_REQUEST: ExecutableAddressRequest = ExecutableAddressRequest::new();
 ///
-/// # fn dummy<'a>() -> Option<&'a KernelAddressResponse> {
+/// # fn dummy<'a>() -> Option<&'a ExecutableAddressResponse> {
 /// // ...later, in our code
-/// KERNEL_ADDRESS_REQUEST.get_response() // ...
+/// EXECUTABLE_ADDRESS_REQUEST.get_response() // ...
 /// # }
 /// ```
 #[repr(C)]
-pub struct KernelAddressRequest {
+pub struct ExecutableAddressRequest {
     id: [u64; 4],
     revision: u64,
-    response: Response<KernelAddressResponse>,
+    response: Response<ExecutableAddressResponse>,
 }
-impl KernelAddressRequest {
+impl ExecutableAddressRequest {
     impl_base_fns!(
         0,
-        KernelAddressResponse,
+        ExecutableAddressResponse,
         magic!(0x71ba76863cc55f63, 0xb2644a48c516a487),
         {}
     );
@@ -824,6 +824,38 @@ impl DeviceTreeBlobRequest {
         0,
         DeviceTreeBlobResponse,
         magic!(0xb40ddb48fb54bac7, 0x545081493f81ffb7),
+        {}
+    );
+}
+
+/// Request the BSP Hard ID without starting other APs
+///
+/// # Usage
+/// ```rust
+/// # use limine::{request::BspHartidRequest, response::BspHartidResponse, BaseRevision};
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
+///
+/// // Request the device-tree blob address
+/// static BSP_HARTID_REQUEST: BspHartidRequest = BspHartidRequest::new();
+///
+/// # fn dummy<'a>() -> Option<&'a BspHartidResponse> {
+/// // ...later, in our code
+/// BSP_HARTID_REQUEST.get_response() // ...
+/// # }
+/// ```
+#[cfg(target_arch = "riscv64")]
+#[repr(C)]
+pub struct BspHartidRequest {
+    id: [u64; 4],
+    revision: u64,
+    response: Response<BspHartidResponse>,
+}
+#[cfg(target_arch = "riscv64")]
+impl BspHartidRequest {
+    impl_base_fns!(
+        0,
+        BspHartidResponse,
+        magic!(0x1369359f025525f9, 0x2ff2a56178391bb6),
         {}
     );
 }

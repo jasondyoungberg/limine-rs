@@ -190,5 +190,5 @@ impl<'a> Framebuffer<'a> {
         }
     }
 }
-unsafe impl Send for Framebuffer {}
-unsafe impl Sync for Framebuffer {}
+unsafe impl Send for Framebuffer<'_> {}
+unsafe impl Sync for Framebuffer<'_> {}

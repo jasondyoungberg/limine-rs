@@ -19,9 +19,9 @@ impl EntryType {
     /// The memory region is used by the bootloader, but can be reclaimed once
     /// all responses have been processed and will no longer be used.
     pub const BOOTLOADER_RECLAIMABLE: Self = Self(5);
-    /// The memory region is used by the kernel and modules, and as such is
+    /// The memory region is used by the executable and modules, and as such is
     /// permanently reserved.
-    pub const KERNEL_AND_MODULES: Self = Self(6);
+    pub const EXECUTABLE_AND_MODULES: Self = Self(6);
     /// The memory region is used by the framebuffer, and as such is permanently
     /// reserved.
     pub const FRAMEBUFFER: Self = Self(7);
