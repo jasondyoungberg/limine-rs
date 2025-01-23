@@ -34,6 +34,7 @@ impl From<u64> for EntryType {
 
 /// A memory map entry.
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct Entry {
     /// The base of the memory region, in *physical space*.
     pub base: u64,
