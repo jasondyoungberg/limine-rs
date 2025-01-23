@@ -52,6 +52,7 @@ impl MemoryModel {
 
 /// A mode supported by the current framebuffer.
 #[repr(C)]
+#[derive(Clone, Copy)]
 pub struct VideoMode {
     /// The pitch (distance between rows, in bytes). This is not always the same
     /// as `(width * bpp) / 8`, as padding bytes may be added to achieve a
