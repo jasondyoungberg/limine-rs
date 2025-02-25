@@ -19,7 +19,7 @@ bitflags! {
 
 /// Create a NUL-terminated C string from a string literal
 #[macro_export]
-#[deprecated(note = "use a C-string literal instead")]
+#[deprecated(since = "0.4.0", note = "use a C-string literal instead")]
 macro_rules! cstr {
     () => {
         unsafe { core::ffi::CStr::from_bytes_with_nul_unchecked(b"\0") }
@@ -43,8 +43,8 @@ impl InternalModule {
     /// Create a new internal module with no path, no cmdline and no flags.
     pub const fn new() -> Self {
         Self {
-            path: b"\0".as_ptr().cast(),
-            cmdline: b"\0".as_ptr().cast(),
+            path: c"".as_ptr(),
+            cmdline: c"".as_ptr(),
             flags: ModuleFlags::empty(),
         }
     }

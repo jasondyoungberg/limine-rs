@@ -378,6 +378,25 @@ impl PagingModeRequest {
     }
 }
 
+#[deprecated(since = "0.4.0", note = "please use `MpRequest` instead")]
+/// Request the start of all other cores on the system, if they exist. Without
+/// this request, non-bootstrap cores will be ignored.
+///
+/// # Usage
+/// ```rust
+/// # use limine::{request::SmpRequest, response::SmpResponse, BaseRevision};
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
+///
+/// // Request that all other cores be started
+/// static SMP_REQUEST: SmpRequest = SmpRequest::new();
+///
+/// # fn dummy<'a>() -> Option<&'a SmpResponse> {
+/// // ...later, in our code
+/// SMP_REQUEST.get_response() // ...
+/// # }
+/// ```
+pub type SmpRequest = MpRequest;
+
 /// Request the start of all other cores on the system, if they exist. Without
 /// this request, non-bootstrap cores will be ignored.
 ///
@@ -501,6 +520,25 @@ impl EntryPointRequest {
         self.entry_point
     }
 }
+
+#[deprecated(since = "0.4.0", note = "please use `ExecutableFileRequest` instead")]
+/// Request information about the loaded kernel file. See [`File`](crate::file::File)
+/// for more information.
+///
+/// # Usage
+/// ```rust
+/// # use limine::{request::KernelFileRequest, response::KernelFileResponse, BaseRevision};
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
+///
+/// // Request information about the kernel file
+/// static KERNEL_FILE_REQUEST: KernelFileRequest = KernelFileRequest::new();
+///
+/// # fn dummy<'a>() -> Option<&'a KernelFileResponse> {
+/// // ...later, in our code
+/// KERNEL_FILE_REQUEST.get_response() // ...
+/// # }
+/// ```
+pub type KernelFileRequest = ExecutableFileRequest;
 
 /// Request information about the loaded executable file. See [`File`](crate::file::File)
 /// for more information.
@@ -738,6 +776,7 @@ impl EfiMemoryMapRequest {
     );
 }
 
+#[deprecated(since = "0.4.0", note = "please use `DateAtBootRequest` instead")]
 /// Request the boot time in seconds
 ///
 /// # Usage
@@ -753,20 +792,58 @@ impl EfiMemoryMapRequest {
 /// BOOT_TIME_REQUEST.get_response() // ...
 /// # }
 /// ```
+pub type BootTimeRequest = DateAtBootRequest;
+
+/// Request the time and date of boot, taken from the system RTC
+///
+/// # Usage
+/// ```rust
+/// # use limine::{request::DateAtBootRequest, response::DateAtBootResponse, BaseRevision};
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
+///
+/// // Request the boot time
+/// static DATE_AT_BOOT_REQUEST: DateAtBootRequest = DateAtBootRequest::new();
+///
+/// # fn dummy<'a>() -> Option<&'a DateAtBootResponse> {
+/// // ...later, in our code
+/// DATE_AT_BOOT_REQUEST.get_response() // ...
+/// # }
+/// ```
 #[repr(C)]
-pub struct BootTimeRequest {
+pub struct DateAtBootRequest {
     id: [u64; 4],
     revision: u64,
-    response: Response<BootTimeResponse>,
+    response: Response<DateAtBootResponse>,
 }
-impl BootTimeRequest {
+impl DateAtBootRequest {
     impl_base_fns!(
         0,
-        BootTimeResponse,
+        DateAtBootResponse,
         magic!(0x502746e184c088aa, 0xfbc5ec83e6327893),
         {}
     );
 }
+
+#[deprecated(
+    since = "0.4.0",
+    note = "please use `ExecutableAddressRequest` instead"
+)]
+/// Request the base address of the kernel code, in virtual and physical space.
+///
+/// # Usage
+/// ```rust
+/// # use limine::{request::KernelAddressRequest, response::KernelAddressResponse, BaseRevision};
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
+///
+/// // Request the kernel address
+/// static KERNEL_ADDRESS_REQUEST: KernelAddressRequest = KernelAddressRequest::new();
+///
+/// # fn dummy<'a>() -> Option<&'a KernelAddressResponse> {
+/// // ...later, in our code
+/// KERNEL_ADDRESS_REQUEST.get_response() // ...
+/// # }
+/// ```
+pub type KernelAddressRequest = ExecutableAddressRequest;
 
 /// Request the base address of the executable code, in virtual and physical space.
 ///
@@ -794,6 +871,37 @@ impl ExecutableAddressRequest {
         0,
         ExecutableAddressResponse,
         magic!(0x71ba76863cc55f63, 0xb2644a48c516a487),
+        {}
+    );
+}
+
+/// Get the command line associated with the booted executable.
+/// This is equivalent to [File::string][crate::file::File::string]
+///
+/// # Usage
+/// ```rust
+/// # use limine::{request::ExecutableCmdlineRequest, response::ExecutableCmdlineResponse, BaseRevision};
+/// static BASE_REVISION: BaseRevision = BaseRevision::new();
+///
+/// // Request the executable address
+/// static EXECUTABLE_CMDLINE_REQUEST: ExecutableCmdlineRequest = ExecutableCmdlineRequest::new();
+///
+/// # fn dummy<'a>() -> Option<&'a ExecutableCmdlineResponse> {
+/// // ...later, in our code
+/// EXECUTABLE_CMDLINE_REQUEST.get_response() // ...
+/// # }
+/// ```
+#[repr(C)]
+pub struct ExecutableCmdlineRequest {
+    id: [u64; 4],
+    revision: u64,
+    response: Response<ExecutableCmdlineResponse>,
+}
+impl ExecutableCmdlineRequest {
+    impl_base_fns!(
+        0,
+        ExecutableCmdlineResponse,
+        magic!(0x4b161536e598651e, 0xb390ad4a2f1f303a),
         {}
     );
 }

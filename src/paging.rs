@@ -5,11 +5,6 @@
 #[repr(transparent)]
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Mode(u64);
-impl From<u64> for Mode {
-    fn from(value: u64) -> Self {
-        Self(value)
-    }
-}
 
 #[cfg(any(target_arch = "x86_64", target_arch = "aarch64"))]
 impl Mode {

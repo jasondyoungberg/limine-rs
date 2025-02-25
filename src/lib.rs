@@ -67,6 +67,7 @@ pub mod mp;
 pub mod paging;
 pub mod request;
 pub mod response;
+pub mod smp;
 
 /// A tag setting the base revision supported by the executable. Set this in your
 /// executable in order to require a higher revision. Without this tag, the

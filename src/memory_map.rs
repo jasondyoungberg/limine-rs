@@ -22,14 +22,16 @@ impl EntryType {
     /// The memory region is used by the executable and modules, and as such is
     /// permanently reserved.
     pub const EXECUTABLE_AND_MODULES: Self = Self(6);
+    #[deprecated(
+        since = "0.4.0",
+        note = "please use `EntryType::EXECUTABLE_AND_MODULES` instead"
+    )]
+    /// The memory region is used by the kernel and modules, and as such is
+    /// permanently reserved.
+    pub const KERNEL_AND_MODULES: Self = Self(6);
     /// The memory region is used by the framebuffer, and as such is permanently
     /// reserved.
     pub const FRAMEBUFFER: Self = Self(7);
-}
-impl From<u64> for EntryType {
-    fn from(val: u64) -> Self {
-        Self(val)
-    }
 }
 
 /// A memory map entry.

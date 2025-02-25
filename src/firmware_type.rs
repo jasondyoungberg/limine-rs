@@ -15,8 +15,3 @@ impl FirmwareType {
     /// The firmware type is SBI
     pub const SBI: Self = Self(3);
 }
-impl From<u64> for FirmwareType {
-    fn from(value: u64) -> Self {
-        Self(value)
-    }
-}

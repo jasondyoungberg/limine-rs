@@ -149,6 +149,11 @@ impl PagingModeResponse {
     }
 }
 
+#[deprecated(since = "0.4.0", note = "please use `MpResponse` instead")]
+/// A response to a [smp request](crate::request::SmpRequest). This response
+/// contains information about the boot processor and all other processors.
+pub type SmpResponse = MpResponse;
+
 /// A response to a [mp request](crate::request::MpRequest). This response
 /// contains information about the boot processor and all other processors.
 #[repr(C)]
@@ -250,6 +255,10 @@ impl EntryPointResponse {
     impl_base_fns!();
 }
 
+#[deprecated(since = "0.4.0", note = "please use `ExecutableFileResponse` instead")]
+/// A response to a [kernel file request](crate::request::KernelFileRequest).
+pub type KernelFileResponse = ExecutableFileResponse;
+
 /// A response to a [executable file request](crate::request::ExecutableFileRequest).
 #[repr(C)]
 pub struct ExecutableFileResponse {
@@ -315,11 +324,11 @@ unsafe impl Send for SmbiosResponse {}
 impl SmbiosResponse {
     impl_base_fns!();
 
-    /// Returns the address of the SMBIOS 32-bit entry point, if it exists.
+    /// Returns the physical address of the SMBIOS 32-bit entry point, if it exists.
     pub fn entry_32(&self) -> Option<NonZeroUsize> {
         self.entry_32
     }
-    /// Returns the address of the SMBIOS 64-bit entry point, if it exists.
+    /// Returns the physical address of the SMBIOS 64-bit entry point, if it exists.
     pub fn entry_64(&self) -> Option<NonZeroUsize> {
         self.entry_64
     }
@@ -375,20 +384,49 @@ impl EfiMemoryMapResponse {
     }
 }
 
+#[deprecated(since = "0.4.0", note = "please use `DateAtBootResponse` instead")]
 /// A response to a [boot time request](crate::request::BootTimeRequest).
+pub type BootTimeResponse = DateAtBootResponse;
+
+/// A response to a [date at boot request](crate::request::DateAtBootRequest).
 #[repr(C)]
-pub struct BootTimeResponse {
+pub struct DateAtBootResponse {
     revision: u64,
-    boot_time: i64,
+    timestamp: i64,
 }
-impl BootTimeResponse {
+impl DateAtBootResponse {
     impl_base_fns!();
 
+    /// Returns unix timestamp, as read from the system RTC.
+    pub fn timestamp(&self) -> Duration {
+        Duration::from_secs(self.timestamp as u64)
+    }
+
+    #[deprecated(
+        since = "0.4.0",
+        note = "please use `DateAtBootResponse::timestamp` instead"
+    )]
     /// Returns the boot time in seconds, as read from the system RTC.
     pub fn boot_time(&self) -> Duration {
-        Duration::from_secs(self.boot_time as u64)
+        self.timestamp()
     }
 }
+
+#[deprecated(
+    since = "0.4.0",
+    note = "please use `ExecutableAddressResponse` instead"
+)]
+/// A response to a [kernel address request](crate::request::KernelAddressRequest).
+///
+/// This can be used to convert a virtual address within the kernel to a
+/// physical address like so:
+/// ```rust
+/// # let virt_addr = 42;
+/// # let virtual_base = 42;
+/// # let physical_base = 42;
+/// let phys_addr = virt_addr - virtual_base + physical_base;
+/// ````
+pub type KernelAddressResponse = ExecutableAddressResponse;
 
 /// A response to a [executable address request](crate::request::ExecutableAddressRequest).
 ///
@@ -416,6 +454,32 @@ impl ExecutableAddressResponse {
     /// Returns the base address of the executable in virtual memory.
     pub fn virtual_base(&self) -> u64 {
         self.virtual_base
+    }
+}
+
+/// A response to a [executable address request](crate::request::ExecutableAddressRequest).
+///
+/// This can be used to convert a virtual address within the executable to a
+/// physical address like so:
+/// ```rust
+/// # let virt_addr = 42;
+/// # let virtual_base = 42;
+/// # let physical_base = 42;
+/// let phys_addr = virt_addr - virtual_base + physical_base;
+/// ````
+#[repr(C)]
+pub struct ExecutableCmdlineResponse {
+    revision: u64,
+    cmdline: *const c_char,
+}
+unsafe impl Sync for ExecutableCmdlineResponse {}
+unsafe impl Send for ExecutableCmdlineResponse {}
+impl ExecutableCmdlineResponse {
+    impl_base_fns!();
+
+    /// Returns the base address of the executable in physical memory.
+    pub fn cmdline(&self) -> &CStr {
+        unsafe { CStr::from_ptr(self.cmdline) }
     }
 }
 

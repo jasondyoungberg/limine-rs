@@ -3,6 +3,7 @@
 use core::{
     ffi::c_void,
     marker::{Send, Sync},
+    mem::MaybeUninit,
     ptr::NonNull,
 };
 
@@ -21,7 +22,7 @@ pub(crate) struct RawFramebufferV0 {
     green_mask_shift: u8,
     blue_mask_size: u8,
     blue_mask_shift: u8,
-    _unused: [u8; 7],
+    _unused: MaybeUninit<[u8; 7]>,
     edid_size: u64,
     edid: Option<NonNull<u8>>,
 }

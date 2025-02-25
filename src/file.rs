@@ -68,7 +68,7 @@ pub struct File {
     addr: *mut c_void,
     size: u64,
     path: *const c_char,
-    cmdline: *const c_char,
+    string: *const c_char,
     media_type: MediaType,
     _unused: MaybeUninit<u32>,
     tftp_ip: Option<NonZeroU32>,
@@ -98,12 +98,21 @@ impl File {
     /// The path of the file. This is the path that was passed to the bootloader
     /// in either the configuration file or the `internal_modules` field of the
     /// [`ModuleRequest`](crate::request::ModuleRequest).
+    pub fn path(&self) -> &CStr {
+        unsafe { CStr::from_ptr(self.path) }
+    }
+
+    /// The string associated with this file. This is the command line that was passed
+    /// to the bootloader in either the configuration file or the
+    /// `internal_modules` field of the
+    /// [`ModuleRequest`](crate::request::ModuleRequest).
     ///
     /// It is returned as a raw byte slice, and the encoding is unspecified.
-    pub fn path(&self) -> &[u8] {
-        let c_str = unsafe { CStr::from_ptr(self.path) };
-        c_str.to_bytes()
+    pub fn string(&self) -> &CStr {
+        unsafe { CStr::from_ptr(self.string) }
     }
+
+    #[deprecated(since = "0.4.0", note = "please use `File::string` instead")]
     /// The command line of the file. This is the command line that was passed
     /// to the bootloader in either the configuration file or the
     /// `internal_modules` field of the
@@ -111,7 +120,7 @@ impl File {
     ///
     /// It is returned as a raw byte slice, and the encoding is unspecified.
     pub fn cmdline(&self) -> &[u8] {
-        let c_str = unsafe { CStr::from_ptr(self.cmdline) };
+        let c_str = unsafe { CStr::from_ptr(self.string) };
         c_str.to_bytes()
     }
 
