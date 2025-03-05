@@ -198,7 +198,7 @@ impl FirmwareTypeRequest {
 /// static BASE_REVISION: BaseRevision = BaseRevision::new();
 ///
 /// // Request a 128 KiB stack
-/// static STACK_SIZE_REQUEST: StackSizeRequest = StackSizeRequest::new().with_size(0x32000);
+/// static STACK_SIZE_REQUEST: StackSizeRequest = StackSizeRequest::new().with_size(128 * 1024);
 ///
 /// # fn dummy<'a>() -> Option<&'a StackSizeResponse> {
 /// // ...later, in our code
