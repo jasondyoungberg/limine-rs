@@ -1,3 +1,10 @@
+# 0.4.0
+* Update to revision 3
+* Add `ExecutableCmdlineRequest`
+* Add `BspHartidRequest`
+* Deprecate `cstr!` macro
+* Rename things to align with limine.h
+
 # 0.3.1
 * Add `RequestsStartMarker` and `RequestsEndMarker`
 * Add support for loongarch64
