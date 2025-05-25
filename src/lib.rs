@@ -105,17 +105,17 @@ impl BaseRevision {
 
     /// Check whether the revision used by the bootloader is valid.
     pub fn is_valid(&self) -> bool {
-        (unsafe { self.revision.get().read_volatile() }) != Self::MAGIC_2
+        (unsafe { self.loaded.get().read_volatile() }) != Self::MAGIC_2
     }
 
     /// Returns the revision used by the bootloader if it's valid
     pub fn loaded_revision(&self) -> Option<u64> {
-        let revision = unsafe { self.revision.get().read_volatile() };
+        let loaded = unsafe { self.loaded.get().read_volatile() };
 
-        if revision == Self::MAGIC_2 {
+        if loaded == Self::MAGIC_2 {
             None
         } else {
-            Some(revision)
+            Some(loaded)
         }
     }
 }
