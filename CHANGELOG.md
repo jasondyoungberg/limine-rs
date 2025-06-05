@@ -1,5 +1,5 @@
 # 0.5.0
-* Remove `MpResponse::get_cpus::mut` due to unsoundness
+* **FIX** Remove `MpResponse::cpus_mut` due to unsoundness
 * Change `Cpu.extra` to `AtomicU64`
 
 # 0.4.0
