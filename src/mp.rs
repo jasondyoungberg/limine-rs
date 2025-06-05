@@ -37,7 +37,7 @@ pub struct Cpu {
     pub goto_address: GotoAddress,
 
     /// Free for use by the executable.
-    pub extra: u64,
+    pub extra: core::sync::atomic::AtomicU64,
 }
 
 /// A CPU entry in the MP request.
@@ -60,7 +60,7 @@ pub struct Cpu {
     pub goto_address: GotoAddress,
 
     /// Free for use by the executable.
-    pub extra: u64,
+    pub extra: core::sync::atomic::AtomicU64,
 }
 
 /// A CPU entry in the MP request.
@@ -81,7 +81,7 @@ pub struct Cpu {
     pub goto_address: GotoAddress,
 
     /// Free for use by the executable.
-    pub extra: u64,
+    pub extra: core::sync::atomic::AtomicU64,
 }
 
 /// A CPU entry in the MP request.

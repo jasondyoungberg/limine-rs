@@ -1,3 +1,7 @@
+# 0.5.0
+* Remove `MpResponse::get_cpus::mut` due to unsoundness
+* Change `Cpu.extra` to `AtomicU64`
+
 # 0.4.0
 * Update to revision 3
 * Add `ExecutableCmdlineRequest`

@@ -209,14 +209,6 @@ impl MpResponse {
     pub fn cpus(&self) -> &[&mp::Cpu] {
         unsafe { core::slice::from_raw_parts(self.cpus.cast(), self.cpu_ct as usize) }
     }
-
-    /// Returns a mutable slice of found CPUs. See [`Cpu`](mp::Cpu) for more information.
-    /// Note that this function takes `&mut self`, so the response will likely
-    /// need to be wrapped in a `Mutex` or similar. It is provided so that the
-    /// `extra` field on each CPU can be set.
-    pub fn cpus_mut(&mut self) -> &mut [&mut mp::Cpu] {
-        unsafe { core::slice::from_raw_parts_mut(self.cpus.cast(), self.cpu_ct as usize) }
-    }
 }
 
 /// A response to a [memory map request](crate::request::MemoryMapRequest).
