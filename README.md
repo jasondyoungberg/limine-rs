@@ -9,7 +9,7 @@
 Rust crate for parsing the limine boot protocol structures.
 
 ## Resources
-* [Limine Boot Protocol Specification](https://github.com/limine-bootloader/limine/blob/trunk/PROTOCOL.md)
+* [Limine Boot Protocol Specification](https://github.com/limine-bootloader/limine-protocol/blob/trunk/PROTOCOL.md)
 
 ## Barebones
 An example project utilizing the crate can be found [here](https://github.com/limine-bootloader/limine-rust-barebones).
