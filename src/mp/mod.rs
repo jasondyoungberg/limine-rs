@@ -1,5 +1,5 @@
-// Copyright © 2026, __robot@PLT
-// SPDX-License-Identifier: MIT
+// Copyright © 2026, Julian Scheffers
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 #[cfg(target_arch = "x86_64")]
 include!("x86_64.rs");

@@ -1,5 +1,5 @@
-// Copyright © 2026, __robot@PLT
-// SPDX-License-Identifier: MIT
+// Copyright © 2026, Julian Scheffers
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 pub const MEMMAP_USABLE: u64 = 0;
 pub const MEMMAP_RESERVED: u64 = 1;
