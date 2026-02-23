@@ -1,6 +1,8 @@
 // Copyright © 2026, Julian Scheffers
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+#![allow(non_camel_case_types)]
+
 /// What paging mode to use on kernel entry.
 #[repr(u64)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

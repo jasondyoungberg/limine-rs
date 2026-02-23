@@ -271,7 +271,7 @@ impl PagingModeRequest {
         }
         unsafe {
             Self::new_raw(
-                [0x95c1a0edab0944cb, 0xa4e5cb3842f7488],
+                [0x95c1a0edab0944cb, 0xa4e5cb3842f7488a],
                 0,
                 PagingModeReqData {
                     mode,
