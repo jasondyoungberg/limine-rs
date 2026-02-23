@@ -52,7 +52,7 @@ impl<Resp, Req> Request<Resp, Req> {
 
     /// Get the response to this request.
     pub fn response(&self) -> Option<&'static Response<Resp>> {
-        unsafe { core::mem::transmute(*self.response.as_ref_unchecked()) }
+        unsafe { core::mem::transmute(self.response.get().read_volatile()) }
     }
 }
 

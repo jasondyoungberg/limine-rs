@@ -48,12 +48,12 @@ impl BaseRevision {
 
     /// Whether the requested revision is supported.
     pub fn is_supported(&self) -> bool {
-        unsafe { self.magic.as_ref_unchecked()[2] == 0 }
+        unsafe { (self.magic.get() as *const u64).add(2).read_volatile() == 0 }
     }
 
     /// What revision is actually in use right now, regardless of whether it is the requested one.
     pub fn actual_revision(&self) -> Option<u64> {
-        let actual = unsafe { self.magic.as_ref_unchecked()[1] };
+        let actual = unsafe { (self.magic.get() as *const u64).add(1).read_volatile() };
         if actual == 0x6a7b384944536bdc {
             None
         } else {
