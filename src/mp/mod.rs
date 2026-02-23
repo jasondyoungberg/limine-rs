@@ -21,7 +21,7 @@ include!("loongarch64.rs");
 compile_error!("The current target architecture is not supported by the Limine boot protocol");
 
 /// Signature for the entrypoint on processor hand-over from the bootloader.
-pub type MpGotoFunction = fn(&MpInfo) -> !;
+pub type MpGotoFunction = unsafe extern "C" fn(&MpInfo) -> !;
 
 #[cfg(not(target_arch = "loongarch64"))]
 impl MpInfo {
