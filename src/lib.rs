@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![no_std]
-#![feature(ptr_metadata)]
 #![allow(unused)]
+#![feature(ptr_metadata)]
+#![feature(unsafe_cell_access)]
+
+use core::cell::UnsafeCell;
 
 use request::BootloaderInfoRequest;
 
@@ -25,8 +28,10 @@ pub const COMMON_MAGIC: [u64; 2] = [0xc7b1dd30df4c8b88, 0x0a82e883a194f07b];
 /// If omitted, 0 is used.
 #[repr(C)]
 pub struct BaseRevision {
-    magic: [u64; 3],
+    magic: UnsafeCell<[u64; 3]>,
 }
+unsafe impl Send for BaseRevision {}
+unsafe impl Sync for BaseRevision {}
 
 impl BaseRevision {
     /// Use the default base revision (4).
@@ -37,21 +42,22 @@ impl BaseRevision {
     /// Use a specific base revision.
     pub const fn with_revision(revision: u64) -> Self {
         Self {
-            magic: [0xf9562b2d5c95a6c8, 0x6a7b384944536bdc, revision],
+            magic: UnsafeCell::new([0xf9562b2d5c95a6c8, 0x6a7b384944536bdc, revision]),
         }
     }
 
     /// Whether the requested revision is supported.
-    pub const fn is_supported(&self) -> bool {
-        self.magic[2] == 0
+    pub fn is_supported(&self) -> bool {
+        unsafe { self.magic.as_ref_unchecked()[2] == 0 }
     }
 
     /// What revision is actually in use right now, regardless of whether it is the requested one.
-    pub const fn actual_revision(&self) -> Option<u64> {
-        if self.magic[1] == 0x6a7b384944536bdc {
+    pub fn actual_revision(&self) -> Option<u64> {
+        let actual = unsafe { self.magic.as_ref_unchecked()[1] };
+        if actual == 0x6a7b384944536bdc {
             None
         } else {
-            Some(self.magic[1])
+            Some(actual)
         }
     }
 }

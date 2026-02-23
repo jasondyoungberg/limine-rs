@@ -3,9 +3,6 @@
 
 use core::sync::atomic::{AtomicPtr, AtomicU64};
 
-/// Signature for the entrypoint on processor hand-over from the bootloader.
-pub type MpGotoFunction = fn(&MpInfo) -> !;
-
 /// Information about a single processor.
 #[repr(C)]
 pub struct MpInfo {

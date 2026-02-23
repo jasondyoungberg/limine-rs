@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use core::{
+    cell::UnsafeCell,
     ffi::{CStr, c_char},
     ops::Deref,
     ptr::null_mut,
@@ -23,7 +24,7 @@ pub struct Request<Resp, Req = ()> {
     magic: [u64; 2],
     id: [u64; 2],
     revision: u64,
-    response: *mut Response<Resp>,
+    response: UnsafeCell<*mut Response<Resp>>,
     request: Req,
 }
 unsafe impl<Resp, Req> Send for Request<Resp, Req> {}
@@ -37,7 +38,7 @@ impl<Resp, Req> Request<Resp, Req> {
             magic: COMMON_MAGIC,
             id,
             revision,
-            response: null_mut(),
+            response: UnsafeCell::new(null_mut()),
             request,
         }
     }
@@ -45,13 +46,13 @@ impl<Resp, Req> Request<Resp, Req> {
     /// Some requests have multiple revisions.
     /// For such requests, this number identifies what version the executable needs.
     /// The bootloader may respond with a lower revision if it doesn't support the requested revision.
-    pub const fn revision(&self) -> u64 {
+    pub fn revision(&self) -> u64 {
         self.revision
     }
 
     /// Get the response to this request.
-    pub const fn response(&self) -> Option<&'static Response<Resp>> {
-        unsafe { core::mem::transmute(self.response) }
+    pub fn response(&self) -> Option<&'static Response<Resp>> {
+        unsafe { core::mem::transmute(*self.response.as_ref_unchecked()) }
     }
 }
 
