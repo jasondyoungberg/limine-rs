@@ -36,11 +36,11 @@ impl File {
         }
     }
 
-    pub fn path(&self) -> &CStr {
-        unsafe { CStr::from_ptr(self.path) }
+    pub fn path(&self) -> &str {
+        unsafe { CStr::from_ptr(self.path).to_str().unwrap() }
     }
 
-    pub fn cmdline(&self) -> &CStr {
-        unsafe { CStr::from_ptr(self.cmdline) }
+    pub fn cmdline(&self) -> &str {
+        unsafe { CStr::from_ptr(self.cmdline).to_str().unwrap() }
     }
 }

@@ -21,11 +21,11 @@ impl InternalModule {
         }
     }
 
-    pub fn path(&self) -> &CStr {
-        unsafe { CStr::from_ptr(self.path) }
+    pub fn path(&self) -> &str {
+        unsafe { CStr::from_ptr(self.path).to_str().unwrap() }
     }
 
-    pub fn string(&self) -> &CStr {
-        unsafe { CStr::from_ptr(self.string) }
+    pub fn string(&self) -> &str {
+        unsafe { CStr::from_ptr(self.string).to_str().unwrap() }
     }
 }

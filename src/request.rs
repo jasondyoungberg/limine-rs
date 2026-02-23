@@ -102,12 +102,12 @@ pub struct BootloaderInfoRespData {
 }
 
 impl BootloaderInfoRespData {
-    pub fn name(&self) -> &CStr {
-        unsafe { CStr::from_ptr(self.name) }
+    pub fn name(&self) -> &str {
+        unsafe { CStr::from_ptr(self.name).to_str().unwrap() }
     }
 
-    pub fn version(&self) -> &CStr {
-        unsafe { CStr::from_ptr(self.version) }
+    pub fn version(&self) -> &str {
+        unsafe { CStr::from_ptr(self.version).to_str().unwrap() }
     }
 }
 
@@ -130,8 +130,8 @@ pub struct ExecutableCmdlineRespData {
 }
 
 impl ExecutableCmdlineRespData {
-    pub fn cmdline(&self) -> &CStr {
-        unsafe { CStr::from_ptr(self.cmdline) }
+    pub fn cmdline(&self) -> &str {
+        unsafe { CStr::from_ptr(self.cmdline).to_str().unwrap() }
     }
 }
 
