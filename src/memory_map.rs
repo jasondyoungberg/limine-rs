@@ -36,7 +36,7 @@ impl EntryType {
     /// the address space containing the ACPI tables as described by the Memory
     /// Layout at Entry section, if the firmware did not already map them within
     /// either an ACPI reclaimable or an ACPI NVS region.
-    pub const ACPI_TABLES: Self = Self(8);
+    pub const RESERVED_MAPPED: Self = Self(8);
 }
 
 /// A memory map entry.
