@@ -23,7 +23,6 @@ compile_error!("The current target architecture is not supported by the Limine b
 /// Signature for the entrypoint on processor hand-over from the bootloader.
 pub type MpGotoFunction = unsafe extern "C" fn(&MpInfo) -> !;
 
-#[cfg(not(target_arch = "loongarch64"))]
 impl MpInfo {
     /// Start this processor.
     /// Writes the extra argument to the struct then writes the goto pointer, triggering the CPU to start running the function provided.
