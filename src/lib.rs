@@ -34,9 +34,9 @@ unsafe impl Send for BaseRevision {}
 unsafe impl Sync for BaseRevision {}
 
 impl BaseRevision {
-    /// Use the default base revision (4).
+    /// Use the default base revision (5).
     pub const fn new() -> Self {
-        Self::with_revision(4)
+        Self::with_revision(5)
     }
 
     /// Use a specific base revision.
