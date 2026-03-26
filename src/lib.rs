@@ -26,6 +26,8 @@ pub const COMMON_MAGIC: [u64; 2] = [0xc7b1dd30df4c8b88, 0x0a82e883a194f07b];
 
 /// Request that Limine uses a certain base revision.
 /// If omitted, 0 is used.
+/// A conformant kernel should test that either [`BaseRevision::is_supported`] is true,
+/// or [`BaseRevision::actual_revision()`] specifies a revision supported by the kernel.
 #[repr(C)]
 pub struct BaseRevision {
     magic: UnsafeCell<[u64; 3]>,
@@ -34,9 +36,13 @@ unsafe impl Send for BaseRevision {}
 unsafe impl Sync for BaseRevision {}
 
 impl BaseRevision {
-    /// Use the default base revision (5).
+    /// Currently highest supported base revision.
+    pub const MAX_SUPPORTED: u64 = 6;
+
+    /// Use the default base revision.
+    /// Identical to `BaseRevision::with_revision(BaseRevision::MAX_SUPPORTED)`.
     pub const fn new() -> Self {
-        Self::with_revision(5)
+        Self::with_revision(Self::MAX_SUPPORTED)
     }
 
     /// Use a specific base revision.
