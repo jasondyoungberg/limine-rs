@@ -7,7 +7,6 @@ include!("x86_64.rs");
 include!("aarch64.rs");
 #[cfg(target_arch = "riscv64")]
 include!("riscv64.rs");
-// Note: Loongarch64 MP seems to be a stub.
 #[cfg(target_arch = "loongarch64")]
 include!("loongarch64.rs");
 
