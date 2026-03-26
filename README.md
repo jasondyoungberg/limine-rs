@@ -2,7 +2,7 @@
 After the apparent abandonment of [limine-rs](https://github.com/jasondyoungberg/limine-rs) and by request of a personal friend, I have created an alternative set of Rust bindings for the Limine boot protocol.
 
 ## Supported Features
-Base revision: 5
+Base revision: 6
 
 Requests:
  - Bootloader Info
