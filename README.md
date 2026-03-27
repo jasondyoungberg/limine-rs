@@ -1,7 +1,7 @@
 # The Limine Boot Protocol For Rust
 This is the new version of the `limine` crate.
 
-An example project using this crate can be found [here](https://github.com/robotman2412/limine-rust-demo).
+An example project using this crate can be found [here](https://github.com/robotman2412/limine-boot-demo).
 
 *Note: The API has singificantly changed between 0.5.x and 0.6.x*
 
