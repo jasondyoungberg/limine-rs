@@ -1,7 +1,11 @@
 # The Limine Boot Protocol For Rust
-After the apparent abandonment of [limine-rs](https://github.com/jasondyoungberg/limine-rs) and by request of a personal friend, I have created an alternative set of Rust bindings for the Limine boot protocol.
+This is the new version of the `limine` crate.
 
-## Supported Features
+An example project using this crate can be found [here](https://github.com/robotman2412/limine-rust-demo).
+
+*Note: The API has singificantly changed between 0.5.x and 0.6.x*
+
+# Supported Features
 Base revision: 6
 
 Requests:
@@ -26,3 +30,6 @@ Requests:
  - Executable Address
  - Device Tree Blob
  - Bootloader Performance
+
+# License
+This crate is available as either [MIT](LICENSE-MIT) or [Apache 2.0](LICENSE-APACHE)
