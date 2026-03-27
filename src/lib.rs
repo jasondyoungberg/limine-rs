@@ -4,7 +4,6 @@
 #![no_std]
 #![allow(unused)]
 #![feature(ptr_metadata)]
-#![feature(unsafe_cell_access)]
 
 use core::cell::UnsafeCell;
 
